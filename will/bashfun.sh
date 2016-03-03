@@ -13,4 +13,4 @@ function gitupload {
 git push origin master
 }
 
-
+gitauth
