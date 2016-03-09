@@ -18,19 +18,27 @@
 #     REVISION: ---
 #===============================================================================
 
-use suss;
+use senet;
 use strict;
 use warnings;
 use utf8;
 use Data::Dumper;
 
-my $v1=suss->new(3,5);
+my $v1=senet->new(3,1);
 
-$v1->myfunc() ;
+	$v1->initPlayer( "bot1" ) ;
+	$v1->initPlayer(  "bot2" ) ;
+	$v1->initPlayer(  "bot3" ) ;
+	$v1->initPlayer(  "human1" ) ;
+	$v1->initPlayer(  "human2" ) ;
+#$v1->myfunc() ;
+#$v1->initBoard();
+#print "\nfirst".$v1->getName();
+#print "\n2nd".$v1->setName("tester");
+#print "\nrd".$v1->getName();
 
-print "\nfirst".$v1->getName();
-print "\n2nd".$v1->setName("tester");
-print "\nrd".$v1->getName();
 
+$v1->startGame();
+	$v1->initPlayer(  "human3" ) ;
 
 print Dumper($v1);

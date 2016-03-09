@@ -38,12 +38,27 @@ use utf8;
 
 sub new {
     my $class=shift;
+	my $numcounters=shift;
+my $boardtype=shift;
 
     print "in constructor";
 
     my $key=shift; # db key
 
     my $self = bless { key=>$key }, $class ;
+
+
+    setAttrib($self,"numcounters",$numcounters);
+    setAttrib($self,"boardtype",$boardtype);
+    setAttrib($self,"gamestarted",0);
+
+    $self->{SENET_SQUARE_START}="X";
+
+    $self->{SENET_SQUARE_PROTECTED}="P";
+    $self->{SENET_SQUARE_LUCKY}="L";
+    $self->{SENET_SQUARE_UNLUCKY}="U";
+	initBoard($self);
+
 
     return $self;
 }
@@ -58,6 +73,13 @@ sub setAttrib {
     return $value;
 }
 
+sub getAttrib {
+    my $self=shift;
+    my $attr=shift;
+
+    return $self->{$attr};
+
+}
 sub getName {
     my $self=shift;
     return $self->{name};
@@ -72,46 +94,46 @@ print $self->{var2};
 
 # db functions
 
-sub dbConnect {
-    my $dbh;
-    if( $ENABLE_SQL) {
-        $dbh= DBI->connect("dbi:mysql:dbname=aa;host=localhost",
-                "user",
-                "pass",
-                { RaiseError => 0}, ) or die $DBI::errstr;
+#sub dbConnect {
+#    my $dbh;
+#    if( $ENABLE_SQL) {
+#        $dbh= DBI->connect("dbi:mysql:dbname=aa;host=localhost",
+#                "user",
+#                "pass",
+#                { RaiseError => 0}, ) or die $DBI::errstr;
+#
+#    }
+#    return $dbh;
+#}
 
-    }
-    return $dbh;
-}
+#sub getDBVal { 
+## using a passed key, get the value at a specific node
+#    my $key = shift;
+#    my $item = shift;
+#
+#
+#    my $dbh=dbConnect();
+#    my $sth = $dbh->prepare("SELECT value FROM session_store where key_id='$key' and item='$item'");
+#    $sth->execute();
+#    my $row;
+#    $row = $sth->fetchrow_hashref();
+#    $sth->finish();
+#    return $row->{value};
+#}
 
-sub getDBVal { 
-# using a passed key, get the value at a specific node
-    my $key = shift;
-    my $item = shift;
-
-
-    my $dbh=dbConnect();
-    my $sth = $dbh->prepare("SELECT value FROM session_store where key_id='$key' and item='$item'");
-    $sth->execute();
-    my $row;
-    $row = $sth->fetchrow_hashref();
-    $sth->finish();
-    return $row->{value};
-}
-
-sub setDBVal { 
-# using a passed key, set the value at a specific node
-    my $key = shift;
-    my $item = shift;
-    my $value=shift;
-
-
-    my $dbh=dbConnect() ;
-    my $sth=$dbh->prepare("insert into session_store ( key_id, item, value) values ('$key','$item','$value') on duplicate key update value='$value'") ;
-    $sth->execute;
-
-    return $value ;
-}
+#sub setDBVal { 
+## using a passed key, set the value at a specific node
+#    my $key = shift;
+#    my $item = shift;
+#    my $value=shift;
+#
+#
+#    my $dbh=dbConnect() ;
+#    my $sth=$dbh->prepare("insert into session_store ( key_id, item, value) values ('$key','$item','$value') on duplicate key update value='$value'") ;
+#    $sth->execute;
+#
+#    return $value ;
+#}
 
 
 
@@ -125,45 +147,27 @@ sub setDBVal {
 #	rotation
 
 
-if( $pack->{key}->{engine} eq "senet" ) {
-    print STDERR "playing senet";
+sub move {
+	my $this=shift;
+	my $counter=shift;
 
-    print STDERR Dumper( $pack ) ;
+	print STDERR "\nMove counter $counter";
 
+	my $thisThrow= getAttrib( $this, "throw");
 
-          my $thisBoard=getTrackRoot( $key, "senetboard") ;
-          my $thisPositionsB=getTrackRoot( $key, "senetposb") ;
-          my $thisPositionsH=getTrackRoot( $key, "senetposh") ;
-          my $thisB=getTrackRoot( $key, "senetcounterb") ;
-          my $thisH=getTrackRoot( $key, "senetcounterh") ;
-         print STDERR "\ndraw current board. $thisBoard" ;
-         print STDERR "\ndraw bot player positions. $thisPositionsB" ;
-         print STDERR "\ndraw human player positions. $thisPositionsH" ;
-         print STDERR "\ndraw bot counters to play. $thisB" ;
-         print STDERR "\ndraw human counters to play. $thisH" ;
-        my $thisTurn=getTrackRoot( $key, "senetturn") ;
-         print STDERR "\ncurrent player turn is: $thisTurn" ;
-            my $thisThrow=getTrackRoot( $key, "senetrolled") ; # set bot 
-         print STDERR "\ncurrent roll is: $thisThrow" ;
+	if( $thisThrow == 4 or $thisThrow == 6 ) {
+		print STDERR "\nCan bring a counter out";
+	}
 
-    if( $pack->{key}->{cmd} eq "move" ) {
+	my $thisTurn=getAttrib( $this, "turn") ;
+	if( $thisTurn eq "b" ) {
+		print STDERR "\nMove bot counter";
+		setAttrib( $this, "turn","h" ) ; # set bot 
+	} else {
 
-        my $counter=$pack->{key}->{vars}->{arg1};
-        print STDERR "\nMove counter $pack->{key}->{vars}->{arg1}";
-
-        if( $thisThrow = 4 or $thisThrow = 6 ) {
-            print STDERR "\nCan bring a counter out";
-        }
-
-        my $thisTurn=getTrackRoot( $key, "senetturn") ;
-        if( $thisTurn eq "b" ) {
-            print STDERR "\nMove bot counter";
-            setTrackRoot( $key, "senetturn","h" ) ; # set bot 
-        } else {
-
-            print STDERR "\nMove human counter";
-            setTrackRoot( $key, "senetturn","b" ) ; # set bot 
-        }
+		print STDERR "\nMove human counter";
+		setAttrib( $this, "turn","b" ) ; # set bot 
+	}
 
 # create a module to handle placement
 # give it the params
@@ -174,163 +178,193 @@ if( $pack->{key}->{engine} eq "senet" ) {
 # 5. the counter to move
 #
 
-        # see if the counter is waiting to come out
+# see if the counter is waiting to come out
 
-        if( index( $thisB, $counter) > 0 ) {
-            if( $thisThrow = 4 or $thisThrow = 6 ) {
-                # bring it out
-                # is there a counter already at the position
-                # if so put it back to waiting
-                # place counter
-}           
+	if( index( $this, $counter) > 0 ) {
+		if( $thisThrow == 4 or $thisThrow == 6 ) {
+# bring it out
+# is there a counter already at the position
+# if so put it back to waiting
+# place counter
+		}           
+	}
+# scan board for the counter to move
+# found counter
+# can we move that many squares?
+# if there a special square at the destination?
+# is there a counter already there?
+# if protected and sqaure taken then cant move
+# if special square then place and take action
+# is the move going to come off of the board?                
 }
-        # scan board for the counter to move
-        # found counter
-        # can we move that many squares?
-        # if there a special square at the destination?
-        # is there a counter already there?
-        # if protected and sqaure taken then cant move
-        # if special square then place and take action
-        # is the move going to come off of the board?                
- 
 
+sub throw {
+my $this=shift;
 
-} elsif( $pack->{key}->{cmd} eq "throw" ) {
-
-                my $thisThrow = senetThrowSticks();
-            setTrackRoot( $key, "senetrolled",$thisThrow ) ; # set bot 
+                my $thisThrow = ThrowSticks();
+            setAttrib( $this, "throw",$thisThrow ) ; # set bot 
             print STDERR "\nThrown: $thisThrow";
-} elsif( $pack->{key}->{cmd} eq "newgame" ) {
+}
+
+
+sub initPlayer {
+	my $this=shift;
+	my $player=shift;
+    
+if( getAttrib($this,"gamestarted") eq 0 ) {
+
+	print STDERR "\nNew player joining $player";
+
+           my $thisBoard=getAttrib( $this, "board");
+            $thisBoard =~ s/./_/g;
+
+	setAttrib( $this, "$player.pos", $thisBoard );
+	setAttrib( $this, "$player.counter", "ABCDE" );
+
+	setAttrib( $this, "players", $player." ".getAttrib( $this, "players") ) ; 
+}
+else { 
+print STDERR "\nGame already underway, cant add new player $player";
+}
+}
+
+
+sub initBoard {
+	my $this=shift;
         # init new board
         # testing setup board
 
-           my $thisBoard=senetNewBoard() ;
+           my $thisBoard;
+
+if( getAttrib( $this, "boardtype") == 2 ) {
+$thisBoard=newBoard2($this) ;
+} else  {
+$thisBoard=newBoardStd($this) ;
+}
             my $thisStart=$thisBoard;
             $thisStart =~ s/./_/g;
 
-           setTrackRoot( $key, "senetboard", $thisBoard ) ;
-           setTrackRoot( $key, "senetboardall", "" ) ;
-           setTrackRoot( $key, "senetposb", $thisStart ) ; # init the player positions on the board
-           setTrackRoot( $key, "senetposh", $thisStart ) ; # init the player positions on the board
-           setTrackRoot( $key, "senetcounterb", "ABCDE" ) ; # init the bot player counters
-           setTrackRoot( $key, "senetcounterh", "HIJKL" ) ; # init the human player counters
-            setTrackRoot( $key, "senetturn","b" ) ; # set bot 
+	setAttrib( $this, "players", "" ) ; 
+
+
+           setAttrib( $this, "board", $thisBoard ) ;
+           setAttrib( $this, "boardall", "" ) ;
+#           setAttrib( $this, "posb", $thisStart ) ; # init the player positions on the board
+ #          setAttrib( $this, "posh", $thisStart ) ; # init the player positions on the board
+  #         setAttrib( $this, "counterb", "ABCDE" ) ; # init the bot player counters
+   #        setAttrib( $this, "counterh", "HIJKL" ) ; # init the human player counters
+            setAttrib( $this, "turn","" ) ; # set bot 
+}
+
+
+#	initPlayer( $this, "bot1" ) ;
+#	initPlayer( $this, "bot2" ) ;
+#	initPlayer( $this, "bot3" ) ;
+#	initPlayer( $this, "human1" ) ;
+#	initPlayer( $this, "human2" ) ;
+
 
             # decide on first player
 
+sub startGame {	
+my $this=shift;
             my $thisThrow = 0;
             my $thisTurn=0;
+while( $thisThrow ne 4 and $thisThrow ne 6 ) { 
+print STDERR "\nStart scan";
+	foreach $thisTurn ( split( / /, getAttrib( $this, "players" )) )  {
 
-            print STDERR "\nDeciding on first throw";
+            print STDERR "\n Deciding on first throw for $thisTurn";
 
-            while( !$thisThrow ) {
 
-                $thisThrow = senetThrowSticks();
+                $thisThrow = throwSticks($this);
 
                 
 
-                if( $thisThrow ne 4 and $thisThrow ne 6 ) { 
-                    print STDERR "\nReroll";
-                    $thisThrow=0;
-
-                    if( $thisTurn ) { 
-
-                    print STDERR "\nBot turn";
-            setTrackRoot( $key, "senetturn","b" ) ; # set bot 
-$thisTurn=0;
-} else {
-
-                    print STDERR "\nHuman turn";
-            setTrackRoot( $key, "senetturn","h" ) ; # set bot 
-$thisTurn=1;
+                if( $thisThrow == 4 or $thisThrow == 6 ) { 
+            setAttrib( $this, "turn",$thisTurn ) ; # set bot 
+            setAttrib( $this, "throw",$thisThrow ) ; # set bot 
+                    last;
+		}
+	}		
 }
-                    }
-}
-
-            setTrackRoot( $key, "senetrolled",$thisThrow ) ; # set bot 
                                 
+    setAttrib($this,"gamestarted",1);
+}
 
 
+
+sub draw {
+	my $this=shift;
 #        print STDERR "new board layout: $thisBoard";
-    } elsif( $pack->{key}->{cmd} eq "redraw" ) {
-        # init new board
-        # testing setup board
+# init new board
+# testing setup board
 
-          my $thisBoard=getTrackRoot( $key, "senetboard") ;
-          my $thisPositionsB=getTrackRoot( $key, "senetposb") ;
-          my $thisPositionsH=getTrackRoot( $key, "senetposh") ;
-          my $thisB=getTrackRoot( $key, "senetcounterb") ;
-          my $thisH=getTrackRoot( $key, "senetcounterh") ;
-         print STDERR "\ndraw current board. $thisBoard" ;
-         print STDERR "\ndraw bot player positions. $thisPositionsB" ;
-         print STDERR "\ndraw human player positions. $thisPositionsH" ;
-         print STDERR "\ndraw bot counters to play. $thisB" ;
-         print STDERR "\ndraw human counters to play. $thisH" ;
-        my $thisTurn=getTrackRoot( $key, "senetturn") ;
-         print STDERR "\ncurrent player turn is: $thisTurn" ;
-            my $thisThrow=getTrackRoot( $key, "senetrolled") ; # set bot 
-         print STDERR "\ncurrent roll is: $thisThrow" ;
+	my $thisBoard=getAttrib( $this, "board") ;
+	my $thisPositionsB=getAttrib( $this, "posb") ;
+	my $thisPositionsH=getAttrib( $this, "posh") ;
+	my $thisB=getAttrib( $this, "counterb") ;
+	my $thisH=getAttrib( $this, "counterh") ;
+	print STDERR "\ndraw current board. $thisBoard" ;
+	print STDERR "\ndraw bot player positions. $thisPositionsB" ;
+	print STDERR "\ndraw human player positions. $thisPositionsH" ;
+	print STDERR "\ndraw bot counters to play. $thisB" ;
+	print STDERR "\ndraw human counters to play. $thisH" ;
+	my $thisTurn=getAttrib( $this, "turn") ;
+	print STDERR "\ncurrent player turn is: $thisTurn" ;
+	my $thisThrow=getAttrib( $this, "throw") ; # set bot 
+		print STDERR "\ncurrent roll is: $thisThrow" ;
 
-        # produce composite board
-        #
-        my $full=$thisBoard;
-        for( my $c=0; $c<=length($thisPositionsB); $c++ ) {
-            if( substr($thisPositionsB,$c,1) ne "_" ) {
-                substr($full, $c, 0)=substr($thisPositionsB,$c, 1);
-}
-            if( substr($thisPositionsH,$c,1) ne "_" ) {
-                substr($full, $c, 0)=substr($thisPositionsH,$c, 1);
-}
-}
-
-        print STDERR "\nComp board: $full ";
-       
-
-           setTrackRoot( $key, "senetboardall", $full ) ;
-    
-
-    } elsif( $pack->{key}->{cmd} eq "turn" ) {
-        # get current turn
-          
-            my $thisThrow=getTrackRoot( $key, "senetrolled") ; # set bot 
-         print STDERR "\ncurrent roll is: $thisThrow" ;
-        my $thisTurn=getTrackRoot( $key, "senetturn") ;
-         print STDERR "\ncurrent player turn is: $thisTurn" ;
-    }
-} else {
-# otherwise lets process ritual stuff
-
-my $rngstream = $pack->{key}->{cmd}->{rngstream};		
-	
-	if( defined( $rngstream) ) {
-	setTrackRoot($key,"rngstream",$rngstream);
-}
-# TODO id if this ritual ref is a new one or to add to a current running one
-# TODO store the bot payload
-# TODO to roll up the bot payload to engine level contribution
-# TODO intrep the payload. is it command to create, produce a result, or intent applied
-# senet game code
+# produce composite board
 #
+	my $full=$thisBoard;
+	for( my $c=0; $c<=length($thisPositionsB); $c++ ) {
+		if( substr($thisPositionsB,$c,1) ne "_" ) {
+			substr($full, $c, 0)=substr($thisPositionsB,$c, 1);
+		}
+		if( substr($thisPositionsH,$c,1) ne "_" ) {
+			substr($full, $c, 0)=substr($thisPositionsH,$c, 1);
+		}
+	}
+
+	print STDERR "\nComp board: $full ";
+
+
+	setAttrib( $this, "boardall", $full ) ;
+
+}
+
+
+sub turn {
+	my $this=shift;
+
+	my $thisThrow=getAttrib( $this, "throw") ; # set bot 
+		print STDERR "\ncurrent roll is: $thisThrow" ;
+	my $thisTurn=getAttrib( $this, "turn") ;
+	print STDERR "\ncurrent player turn is: $thisTurn" ;
+} 
 
 
 
 
-sub senetNewBoard {
+sub newBoardStd {
+	my $this=shift;
     my $board ;
     $board = '.' x 30 ;  # standard board size
 
-    substr($board, 4, 1) = $SENET_SQUARE_START;
-    substr($board, 6, 1) = $SENET_SQUARE_START;
 
-    substr($board, 15, 1) = $SENET_SQUARE_PROTECTED;
-    substr($board, 20, 1) = $SENET_SQUARE_LUCKY;
-    substr($board, 25, 1) = $SENET_SQUARE_UNLUCKY;
+    substr($board, 4, 1) = $this->{SENET_SQUARE_START};
+    substr($board, 6, 1) = $this->{SENET_SQUARE_START};
+
+    substr($board, 15, 1) = $this->{SENET_SQUARE_PROTECTED};
+    substr($board, 20, 1) = $this->{SENET_SQUARE_LUCKY};
+    substr($board, 25, 1) = $this->{SENET_SQUARE_UNLUCKY};
     
     print STDERR "\nboard layout created: $board";
     return $board;
 }
 
-sub senetDrawBoard {
+sub DrawBoard {
     my $board=shift; # pass the board layout to draw
     my $layout="";
     
@@ -340,17 +374,20 @@ sub senetDrawBoard {
     return $layout;
 }
 
-sub senetThrowSticks {
-    my $thrown=0;
-    
-    while( !$thrown ) {
-        $thrown=int(rand(6));
-        print STDERR "\nThrown $thrown";
+sub throwSticks {
+	my $this=shift;
+	my $thrown=0;
 
-        if( $thrown == 5 ) { print STDERR "\nReroll"; $thrown =0 ; }
-}
-    
-return $thrown;
+	while( !$thrown ) {
+		$thrown=int(rand(6));
+		print STDERR " Thrown: $thrown";
+
+		if( $thrown == 5 ) { print STDERR " Reroll "; $thrown =0 ; }
+	}
+
+            setAttrib( $this, "throw",$thrown ) ; # set bot 
+            print STDERR " Final Thrown: $thrown";
+	return $thrown;
 
 }
 
