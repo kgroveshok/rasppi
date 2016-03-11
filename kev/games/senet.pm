@@ -67,6 +67,36 @@ my $boardtype=shift;
     return $self;
 }
 
+sub inGame {
+	my $this=shift;
+	# returns true if game is currently in progress
+
+	return getAttrib( $this, "gamestarted" ) == 1;
+}
+
+
+# suggest a move to make (ideal for bots and helpful for humans)
+# returns the selec
+
+
+sub suggestMove {
+	my $this=shift;
+
+
+	# get current player
+	my $curPlayer = getAttrib($this, "turn" ) ;
+
+	# get the current throw
+	my $curThrow = getAttrib( $this, "throw" ) ;
+
+	# get board data
+	my $curAll = getAttrib( $this, "boardall" ) ;
+
+
+}
+
+
+
 sub setAttrib {
     my $self=shift;
     my $attr=shift;
@@ -90,10 +120,10 @@ sub getName {
 }
 
 sub myfunc {
-my $self=shift;
-print "hello";
-print $self->{var1};
-print $self->{var2};
+	my $self=shift;
+	print "hello";
+	print $self->{var1};
+	print $self->{var2};
 }
 
 # db functions
@@ -203,63 +233,65 @@ sub move {
 }
 
 sub throw {
-my $this=shift;
+	my $this=shift;
 
-                my $thisThrow = ThrowSticks();
-            setAttrib( $this, "throw",$thisThrow ) ; # set bot 
-            print STDERR "\nThrown: $thisThrow";
+	my $thisThrow = ThrowSticks();
+	setAttrib( $this, "throw",$thisThrow ) ; # set bot 
+		print STDERR "\nThrown: $thisThrow";
 }
 
 
 sub initPlayer {
 	my $this=shift;
 	my $player=shift;
-    
-if( getAttrib($this,"gamestarted") eq 0 ) {
+	my $playerSign=shift ; # symbol for the player on the board
 
-	print STDERR "\nNew player joining $player";
+	if( getAttrib($this,"gamestarted") eq 0 ) {
 
-           my $thisBoard=getAttrib( $this, "board");
-            $thisBoard =~ s/./_/g;
+		print STDERR "\nNew player joining $player";
 
-	setAttrib( $this, "$player.pos", $thisBoard );
+		my $thisBoard=getAttrib( $this, "board");
+		$thisBoard =~ s/./_/g;
+
+		setAttrib( $this, "$player.pos", $thisBoard );
+		setAttrib( $this, "$player.symbol", $playerSign );
 
 
-	setAttrib( $this, "$player.counter", substr("ABCDEFGHIJKLMNOPQ",0,getAttrib( $this, "numcounters")) );
+		setAttrib( $this, "$player.counter", substr("ABCDEFGHIJKLMNOPQ",0,getAttrib( $this, "numcounters")) );
 
-	setAttrib( $this, "players", $player." ".getAttrib( $this, "players") ) ; 
-}
-else { 
-print STDERR "\nGame already underway, cant add new player $player";
-}
+		setAttrib( $this, "players", $player." ".getAttrib( $this, "players") ) ; 
+	}
+	else { 
+		print STDERR "\nGame already underway, cant add new player $player";
+	}
 }
 
 
 sub initBoard {
 	my $this=shift;
-        # init new board
-        # testing setup board
+# init new board
+# testing setup board
 
-           my $thisBoard;
+	my $thisBoard;
 
-if( getAttrib( $this, "boardtype") == 2 ) {
-$thisBoard=newBoard2($this) ;
-} else  {
-$thisBoard=newBoardStd($this) ;
-}
-            my $thisStart=$thisBoard;
-            $thisStart =~ s/./_/g;
+	if( getAttrib( $this, "boardtype") == 2 ) {
+		$thisBoard=newBoard2($this) ;
+	} else  {
+		$thisBoard=newBoardStd($this) ;
+	}
+	my $thisStart=$thisBoard;
+	$thisStart =~ s/./_/g;
 
 	setAttrib( $this, "players", "" ) ; 
 
 
-           setAttrib( $this, "board", $thisBoard ) ;
-           setAttrib( $this, "boardall", "" ) ;
+	setAttrib( $this, "board", $thisBoard ) ;
+	setAttrib( $this, "boardall", "" ) ;
 #           setAttrib( $this, "posb", $thisStart ) ; # init the player positions on the board
- #          setAttrib( $this, "posh", $thisStart ) ; # init the player positions on the board
-  #         setAttrib( $this, "counterb", "ABCDE" ) ; # init the bot player counters
-   #        setAttrib( $this, "counterh", "HIJKL" ) ; # init the human player counters
-            setAttrib( $this, "turn","" ) ; # set bot 
+#          setAttrib( $this, "posh", $thisStart ) ; # init the player positions on the board
+#         setAttrib( $this, "counterb", "ABCDE" ) ; # init the bot player counters
+#        setAttrib( $this, "counterh", "HIJKL" ) ; # init the human player counters
+	setAttrib( $this, "turn","" ) ; # set bot 
 }
 
 
@@ -273,29 +305,29 @@ $thisBoard=newBoardStd($this) ;
             # decide on first player
 
 sub startGame {	
-my $this=shift;
-            my $thisThrow = 0;
-            my $thisTurn=0;
-while( $thisThrow ne 4 and $thisThrow ne 6 ) { 
-print STDERR "\nStart scan";
-	foreach $thisTurn ( split( / /, getAttrib( $this, "players" )) )  {
+	my $this=shift;
+	my $thisThrow = 0;
+	my $thisTurn=0;
+	while( $thisThrow ne 4 and $thisThrow ne 6 ) { 
+		print STDERR "\nStart scan";
+		foreach $thisTurn ( split( / /, getAttrib( $this, "players" )) )  {
 
-            print STDERR "\n Deciding on first throw for $thisTurn";
+			print STDERR "\n Deciding on first throw for $thisTurn";
 
 
-                $thisThrow = throwSticks($this);
+			$thisThrow = throwSticks($this);
 
-                
 
-                if( $thisThrow == 4 or $thisThrow == 6 ) { 
-            setAttrib( $this, "turn",$thisTurn ) ; # set bot 
-            setAttrib( $this, "throw",$thisThrow ) ; # set bot 
-                    last;
-		}
-	}		
-}
-                                
-    setAttrib($this,"gamestarted",1);
+
+			if( $thisThrow == 4 or $thisThrow == 6 ) { 
+				setAttrib( $this, "turn",$thisTurn ) ; # set bot 
+					setAttrib( $this, "throw",$thisThrow ) ; # set bot 
+					last;
+			}
+		}		
+	}
+
+	setAttrib($this,"gamestarted",1);
 }
 
 
@@ -307,36 +339,36 @@ sub draw {
 # testing setup board
 
 	my $thisBoard=getAttrib( $this, "board") ;
-	my $thisPositionsB=getAttrib( $this, "posb") ;
-	my $thisPositionsH=getAttrib( $this, "posh") ;
-	my $thisB=getAttrib( $this, "counterb") ;
-	my $thisH=getAttrib( $this, "counterh") ;
 	print STDERR "\ndraw current board. $thisBoard" ;
-	print STDERR "\ndraw bot player positions. $thisPositionsB" ;
-	print STDERR "\ndraw human player positions. $thisPositionsH" ;
-	print STDERR "\ndraw bot counters to play. $thisB" ;
-	print STDERR "\ndraw human counters to play. $thisH" ;
 	my $thisTurn=getAttrib( $this, "turn") ;
 	print STDERR "\ncurrent player turn is: $thisTurn" ;
 	my $thisThrow=getAttrib( $this, "throw") ; # set bot 
 		print STDERR "\ncurrent roll is: $thisThrow" ;
 
 # produce composite board
-#
+
 	my $full=$thisBoard;
-	for( my $c=0; $c<=length($thisPositionsB); $c++ ) {
-		if( substr($thisPositionsB,$c,1) ne "_" ) {
-			substr($full, $c, 0)=substr($thisPositionsB,$c, 1);
-		}
-		if( substr($thisPositionsH,$c,1) ne "_" ) {
-			substr($full, $c, 0)=substr($thisPositionsH,$c, 1);
+
+# for all players 
+
+	foreach my $player ( split( / /, getAttrib($this,"players")))  {
+			print STDERR "\nboard for player $player";
+
+		my $thisBoard = getAttrib( $this, $player.".pos") ;
+		my $thisSign = getAttrib( $this, $player.".symbol") ;
+
+	for( my $c=0; $c <= length($thisBoard); $c++ ) {
+		if( substr($thisBoard,$c,1) ne "_" ) {
+			#substr($full, $c, 0)=substr($thisBoard,$c, 1);
+			substr($full, $c, 0)=$thisSign;
 		}
 	}
+#
+}
+			print STDERR "\nComp board: $full ";
 
-	print STDERR "\nComp board: $full ";
 
-
-	setAttrib( $this, "boardall", $full ) ;
+			setAttrib( $this, "boardall", $full ) ;
 
 }
 
@@ -392,15 +424,15 @@ sub newBoard2 {
     print STDERR "\nboard layout created: $board";
     return $board;
 }
-sub DrawBoard {
-    my $board=shift; # pass the board layout to draw
-    my $layout="";
-    
-    $layout=$board;
-
-
-    return $layout;
-}
+#sub DrawBoard {
+#    my $board=shift; # pass the board layout to draw
+#    my $layout="";
+#    
+#    $layout=$board;
+#
+#
+#    return $layout;
+#}
 
 sub throwSticks {
 	my $this=shift;
