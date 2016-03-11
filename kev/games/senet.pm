@@ -48,7 +48,6 @@ my $boardtype=shift;
     my $self = bless { key=>$key }, $class ;
 
 
-    setAttrib($self,"numcounters",$numcounters);
     setAttrib($self,"boardtype",$boardtype);
     setAttrib($self,"gamestarted",0);
 
@@ -59,6 +58,11 @@ my $boardtype=shift;
     $self->{SENET_SQUARE_UNLUCKY}="U";
 	initBoard($self);
 
+    if( $numcounters eq 0 ) {
+    setAttrib($self,"numcounters",getAttrib($self, "defcounters"));
+    }    else {
+    setAttrib($self,"numcounters",$numcounters);
+       }
 
     return $self;
 }
@@ -219,7 +223,9 @@ if( getAttrib($this,"gamestarted") eq 0 ) {
             $thisBoard =~ s/./_/g;
 
 	setAttrib( $this, "$player.pos", $thisBoard );
-	setAttrib( $this, "$player.counter", "ABCDE" );
+
+
+	setAttrib( $this, "$player.counter", substr("ABCDEFGHIJKLMNOPQ",0,getAttrib( $this, "numcounters")) );
 
 	setAttrib( $this, "players", $player." ".getAttrib( $this, "players") ) ; 
 }
@@ -361,9 +367,31 @@ sub newBoardStd {
     substr($board, 25, 1) = $this->{SENET_SQUARE_UNLUCKY};
     
     print STDERR "\nboard layout created: $board";
+
+    setAttrib( $this, "defcounters",5);
     return $board;
 }
 
+sub newBoard2 {
+	my $this=shift;
+    my $board ;
+    $board = '.' x 50 ;  # standard board size
+
+
+    substr($board, 4, 1) = $this->{SENET_SQUARE_START};
+    substr($board, 6, 1) = $this->{SENET_SQUARE_START};
+
+    substr($board, 15, 1) = $this->{SENET_SQUARE_PROTECTED};
+    substr($board, 32, 1) = $this->{SENET_SQUARE_PROTECTED};
+    substr($board, 20, 1) = $this->{SENET_SQUARE_LUCKY};
+    substr($board, 30, 1) = $this->{SENET_SQUARE_LUCKY};
+    substr($board, 25, 1) = $this->{SENET_SQUARE_UNLUCKY};
+    substr($board, 45, 1) = $this->{SENET_SQUARE_UNLUCKY};
+    setAttrib( $this, "defcounters",8);
+    
+    print STDERR "\nboard layout created: $board";
+    return $board;
+}
 sub DrawBoard {
     my $board=shift; # pass the board layout to draw
     my $layout="";

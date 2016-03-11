@@ -24,7 +24,7 @@ use warnings;
 use utf8;
 use Data::Dumper;
 
-my $v1=senet->new(3,1);
+my $v1=senet->new(0,1);
 
 	$v1->initPlayer( "bot1" ) ;
 	$v1->initPlayer(  "bot2" ) ;
