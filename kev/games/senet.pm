@@ -171,9 +171,53 @@ sub myfunc {
 
 
 
+sub getPlayerAt {
+	# returns player who is at square
+
+	my $this=shift;
+	my $pos= shift ;
+
+
+	
+	foreach my $player ( split( / /, getAttrib($this,"players")))  {
+			print STDERR "\nboard for player $player";
+
+		my $thisBoard = getAttrib( $this, $player.".pos") ;
+#		my $thisSign = getAttrib( $this, $player.".symbol") ;
+
+		if( substr($thisBoard, $pos, 1 ) ne "_" ) {
+			return $player;
+		}
+#
+}
+
+	return "";
+}
 
 
 
+sub getCounterAt {
+	# returns the counter name at square
+
+	my $this=shift;
+	my $pos= shift ;
+
+
+	
+	foreach my $player ( split( / /, getAttrib($this,"players")))  {
+			print STDERR "\nboard for player $player";
+
+		my $thisBoard = getAttrib( $this, $player.".pos") ;
+#		my $thisSign = getAttrib( $this, $player.".symbol") ;
+
+		if( substr($thisBoard, $pos, 1 ) ne "_" ) {
+			return $player;
+		}
+#
+}
+
+	return "";
+}
 
 
 
@@ -194,14 +238,17 @@ sub move {
 	}
 
 	my $thisTurn=getAttrib( $this, "turn") ;
-	if( $thisTurn eq "b" ) {
-		print STDERR "\nMove bot counter";
-		setAttrib( $this, "turn","h" ) ; # set bot 
-	} else {
 
-		print STDERR "\nMove human counter";
-		setAttrib( $this, "turn","b" ) ; # set bot 
-	}
+
+	moveTo( $this, $counter, $thisThrow ) ;
+#	if( $thisTurn eq "b" ) {
+#		print STDERR "\nMove bot counter";
+#		setAttrib( $this, "turn","h" ) ; # set bot 
+#	} else {
+#
+#		print STDERR "\nMove human counter";
+#		setAttrib( $this, "turn","b" ) ; # set bot 
+#	}
 
 # create a module to handle placement
 # give it the params
@@ -216,6 +263,7 @@ sub move {
 
 	if( index( $this, $counter) > 0 ) {
 		if( $thisThrow == 4 or $thisThrow == 6 ) {
+
 # bring it out
 # is there a counter already at the position
 # if so put it back to waiting
@@ -230,6 +278,31 @@ sub move {
 # if protected and sqaure taken then cant move
 # if special square then place and take action
 # is the move going to come off of the board?                
+}
+
+sub moveTo {
+	my $this=shift;
+	my $counter=shift;
+	my $moveby=shift;
+
+	# if there is a counter at point...
+
+	
+
+	# is counter own player?
+	# yes then prevent move
+	#  return 0;
+	# if another player
+	#  if protected square stop move return 0;
+	#  if unlucky square then loose counter
+	#  remove players piece back to stack 
+	#  continue with update position
+	
+
+
+	# update counter position
+
+	return 1; #ok
 }
 
 sub throw {
