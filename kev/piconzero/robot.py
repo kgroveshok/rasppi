@@ -74,7 +74,7 @@ gripVal = 90
 pz.setOutput (pan, panVal)
 pz.setOutput (tilt, tiltVal)
 pz.setOutput (grip, gripVal)
-print "Tests the motors by using the arrow keys to control"
+print "Tests the motors by using the arrow keys to control. number keys. 5 to stop"
 print "Use , or < to slow down"
 print "Use . or > to speed up"
 print "Neck. WADZ. S = centre"
@@ -89,16 +89,16 @@ try:
         #keyp = readkey()
         keyp = readchar()
         #keyp = GetChar(False)
-        if ord(keyp) == 16:
+        if keyp == '2' or ord(keyp) == 16:
             pz.forward(speed)
             print 'Forward', speed
-        elif ord(keyp) == 17:
+        elif keyp == '8' or ord(keyp) == 17:
             pz.reverse(speed)
             print 'Reverse', speed
-        elif ord(keyp) == 18:
+        elif keyp == '4' or ord(keyp) == 18:
             pz.spinRight(turnSpeed)
             print 'Spin Right', speed
-        elif ord(keyp) == 19:
+        elif keyp == '6' or ord(keyp) == 19:
             pz.spinLeft(turnSpeed)
             print 'Spin Left', speed
         elif keyp == '.' or keyp == '>':
@@ -151,7 +151,7 @@ try:
             pz.setOutput (grip, gripVal)
         elif ord(keyp) == 3:
             break
-        elif keyp == 'q':
+        elif keyp == '5':
             pz.stop()
             print 'Stop'
         elif ord(keyp) == 3:
