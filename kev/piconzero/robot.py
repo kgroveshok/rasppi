@@ -108,6 +108,13 @@ try:
                   time.sleep( 0.15)
                   ir = pz.readInput(irSen)
                   print "At pan,tilt: ",span,",",stilt,": Distance:", ir
+
+                  volts=min(1,ir*0.0048828125);  # // value from sensor * (5/1024) - if running 3.3.volts then change 5 to 3.3
+
+                  actdist=65*pow(volts, -1.10);  #        // worked out from graph 65 = theretical distance / (1/Volts)S - luckylarry.co.uk
+
+                  print "act distance: ",actdist
+			  
                   # TODO: Save values and pos so build map
              pz.setOutput (pan, panVal)
              pz.setOutput (tilt, tiltVal)
@@ -151,17 +158,18 @@ try:
             pz.setOutput (pan, panVal)
             pz.setOutput (tilt, tiltVal)
         elif keyp == 'f':
-            camVal = max (0, camVal - 5)
             print 'Cam', camVal
-            pz.setOutput (cam, camVal)
+            pz.setOutput (cam, 100)
+            time.sleep(0.1)
+            pz.setOutput( cam, 90)
         elif keyp == 'g':
             camVal = 90
             print 'Centre Cam', camVal
             pz.setOutput (cam, camVal)
         elif keyp == 'h':
-            camVal = min (180, camVal + 5)
-            print 'Cam', camVal
-            pz.setOutput (cam, camVal)
+            pz.setOutput (cam, 80)
+            time.sleep(0.1)
+            pz.setOutput( cam, 90)
         elif keyp == 's':
             panVal = tiltVal = 90
             print 'Centre'
