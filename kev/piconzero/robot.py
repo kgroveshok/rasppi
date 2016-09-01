@@ -58,25 +58,32 @@ neckSpeed = 60
 # Define which pins are the servos
 pan = 0
 tilt = 1
-grip = 2
+cam = 2
+irSen=3
 
 pz.init()
 
 # Set output mode to Servo
 pz.setOutputConfig(pan, 2)
 pz.setOutputConfig(tilt, 2)
-pz.setOutputConfig(grip, 2)
+pz.setOutputConfig(cam, 2)
+
+pz.setInputConfig(irSen, 1)     # set input 0 to Analog
 
 # Centre all servos
 panVal = 90
 tiltVal = 90
-gripVal = 90
+camVal = 90
+fwdPan=75
+fwdTilt=90
 pz.setOutput (pan, panVal)
 pz.setOutput (tilt, tiltVal)
-pz.setOutput (grip, gripVal)
-print "Tests the motors by using the arrow keys to control. number keys. 5 to stop"
+pz.setOutput (cam, camVal)
+print "Tests the motors by using the arrow keys to control. number keys. 5 to stop. IJLM. K=stop"
 print "Use , or < to slow down"
 print "Use . or > to speed up"
+print "V to distance scan"
+print "Move cam. F and H. G = Default"
 print "Neck. WADZ. S = centre"
 print "Speed changes take effect when the next arrow key is pressed"
 print "Press Ctrl-C to end"
@@ -89,16 +96,32 @@ try:
         #keyp = readkey()
         keyp = readchar()
         #keyp = GetChar(False)
-        if keyp == '2' or ord(keyp) == 16:
+        if keyp == '2' or keyp == 'm' or ord(keyp) == 16:
             pz.forward(speed)
-            print 'Forward', speed
-        elif keyp == '8' or ord(keyp) == 17:
-            pz.reverse(speed)
             print 'Reverse', speed
-        elif keyp == '4' or ord(keyp) == 18:
+        elif keyp == 'v':
+             pz.stop()
+             for span in range( 40, 75,5 ):
+               for stilt in range( 30, 150, 5 ):
+                  pz.setOutput (pan, span)
+                  pz.setOutput (tilt, stilt)
+                  time.sleep( 0.15)
+                  ir = pz.readInput(irSen)
+                  print "At pan,tilt: ",span,",",stilt,": Distance:", ir
+                  # TODO: Save values and pos so build map
+             pz.setOutput (pan, panVal)
+             pz.setOutput (tilt, tiltVal)
+        elif keyp == '8' or keyp == 'i' or ord(keyp) == 17:
+            panVal = fwdPan
+            tiltVal = fwdTilt
+            pz.setOutput (pan, panVal)
+            pz.setOutput (tilt, tiltVal)
+            pz.reverse(speed)
+            print 'Forward', speed
+        elif keyp == '4' or keyp == 'j' or ord(keyp) == 18:
             pz.spinRight(turnSpeed)
             print 'Spin Right', speed
-        elif keyp == '6' or ord(keyp) == 19:
+        elif keyp == '6' or keyp == 'l' or ord(keyp) == 19:
             pz.spinLeft(turnSpeed)
             print 'Spin Left', speed
         elif keyp == '.' or keyp == '>':
@@ -112,46 +135,41 @@ try:
             print 'Up', panVal
             pz.setOutput (pan, panVal)
             pz.setOutput (tilt, tiltVal)
-            pz.setOutput (grip, gripVal)
         elif keyp == 'z':
             panVal = min (180, panVal + 5)
             print 'Down', panVal
             pz.setOutput (pan, panVal)
             pz.setOutput (tilt, tiltVal)
-            pz.setOutput (grip, gripVal)
         elif keyp == 'd' :
             tiltVal = max (0, tiltVal - 5)
             print 'Right', tiltVal
             pz.setOutput (pan, panVal)
             pz.setOutput (tilt, tiltVal)
-            pz.setOutput (grip, gripVal)
         elif keyp == 'a' :
             tiltVal = min (180, tiltVal + 5)
             print 'Left', tiltVal
             pz.setOutput (pan, panVal)
             pz.setOutput (tilt, tiltVal)
-            pz.setOutput (grip, gripVal)
+        elif keyp == 'f':
+            camVal = max (0, camVal - 5)
+            print 'Cam', camVal
+            pz.setOutput (cam, camVal)
         elif keyp == 'g':
-            gripVal = max (0, gripVal - 5)
-            print 'Open', gripVal
-            pz.setOutput (pan, panVal)
-            pz.setOutput (tilt, tiltVal)
-            pz.setOutput (grip, gripVal)
+            camVal = 90
+            print 'Centre Cam', camVal
+            pz.setOutput (cam, camVal)
         elif keyp == 'h':
-            gripVal = min (180, gripVal + 5)
-            print 'Close', gripVal
-            pz.setOutput (pan, panVal)
-            pz.setOutput (tilt, tiltVal)
-            pz.setOutput (grip, gripVal)
+            camVal = min (180, camVal + 5)
+            print 'Cam', camVal
+            pz.setOutput (cam, camVal)
         elif keyp == 's':
-            panVal = tiltVal = gripVal = 90
+            panVal = tiltVal = 90
             print 'Centre'
             pz.setOutput (pan, panVal)
             pz.setOutput (tilt, tiltVal)
-            pz.setOutput (grip, gripVal)
         elif ord(keyp) == 3:
             break
-        elif keyp == '5':
+        elif keyp == '5' or keyp == 'k':
             pz.stop()
             print 'Stop'
         elif ord(keyp) == 3:
@@ -160,8 +178,9 @@ try:
 
 
 
+        ir = pz.readInput(irSen)
         distance = int(hcsr04.getDistance())
-        print "Distance:", distance,
+        print "Rear Distance:", distance, " iR Distance:", ir, 
 
 except KeyboardInterrupt:
     print
