@@ -83,7 +83,7 @@ print "Tests the motors by using the arrow keys to control. number keys. 5 to st
 print "Use , or < to slow down"
 print "Use . or > to speed up"
 print "V to distance scan"
-print "Move cam. F and H. G = Default"
+print "Move cam. F and G "
 print "Neck. WADZ. S = centre"
 print "Speed changes take effect when the next arrow key is pressed"
 print "Press Ctrl-C to end"
@@ -107,13 +107,15 @@ try:
                   pz.setOutput (tilt, stilt)
                   time.sleep( 0.15)
                   ir = pz.readInput(irSen)
-                  print "At pan,tilt: ",span,",",stilt,": Distance:", ir
+                  distance = int(hcsr04.getDistance())
+                  print "At pan,tilt: ",span,",",stilt,": ir Distance:", ir, " sonic distance: ", distance
 
-                  volts=min(1,ir*0.0048828125);  # // value from sensor * (5/1024) - if running 3.3.volts then change 5 to 3.3
+                  #volts=min(1,ir*0.0048828125);  # // value from sensor * (5/1024) - if running 3.3.volts then change 5 to 3.3
+                  volts=min(1,ir*0.002929688);  # // value from sensor * (5/1024) - if running 3.3.volts then change 5 to 3.3
 
                   actdist=65*pow(volts, -1.10);  #        // worked out from graph 65 = theretical distance / (1/Volts)S - luckylarry.co.uk
 
-                  print "act distance: ",actdist
+                  print "ir act distance: ",actdist
 			  
                   # TODO: Save values and pos so build map
              pz.setOutput (pan, panVal)
@@ -163,10 +165,6 @@ try:
             time.sleep(0.1)
             pz.setOutput( cam, 90)
         elif keyp == 'g':
-            camVal = 90
-            print 'Centre Cam', camVal
-            pz.setOutput (cam, camVal)
-        elif keyp == 'h':
             pz.setOutput (cam, 80)
             time.sleep(0.1)
             pz.setOutput( cam, 90)
