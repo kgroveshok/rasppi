@@ -13,6 +13,7 @@ import tty
 import termios
 import hcsr04
 import select
+import heatmap
 
 hcsr04.init()
 
@@ -101,6 +102,7 @@ try:
             print 'Reverse', speed
         elif keyp == 'v':
              pz.stop()
+             pts = []
              for span in range( 40, 75,5 ):
                for stilt in range( 30, 150, 5 ):
                   pz.setOutput (pan, span)
@@ -116,8 +118,8 @@ try:
                   actdist=65*pow(volts, -1.10);  #        // worked out from graph 65 = theretical distance / (1/Volts)S - luckylarry.co.uk
 
                   print "ir act distance: ",actdist
-			  
-                  # TODO: Save values and pos so build map
+	          # TODO: Save values and pos so build map
+                  pts.append( ( 
              pz.setOutput (pan, panVal)
              pz.setOutput (tilt, tiltVal)
         elif keyp == '8' or keyp == 'i' or ord(keyp) == 17:
