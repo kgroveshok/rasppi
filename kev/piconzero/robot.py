@@ -13,7 +13,6 @@ import tty
 import termios
 import hcsr04
 import select
-import heatmap
 
 hcsr04.init()
 
@@ -48,6 +47,10 @@ def GetChar(Block=True):
   if Block or select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], []):
     return sys.stdin.read(1)
   return '0'
+
+
+
+
 
 # End of single character reading
 #======================================================================
@@ -103,23 +106,49 @@ try:
         elif keyp == 'v':
              pz.stop()
              pts = []
+
+	     ASCII_CHARS = [ '#', '?', '%', '.', 'S', '+', '.', '-', '*', ':', ',', '@',' ']
+
+                              
+             print "Distance Map"               
+             print "Sonar                    : ir"
              for span in range( 40, 75,5 ):
+               irLine=""
+               sonLine=""
+
                for stilt in range( 30, 150, 5 ):
                   pz.setOutput (pan, span)
                   pz.setOutput (tilt, stilt)
                   time.sleep( 0.15)
                   ir = pz.readInput(irSen)
                   distance = int(hcsr04.getDistance())
-                  print "At pan,tilt: ",span,",",stilt,": ir Distance:", ir, " sonic distance: ", distance
+                  #print "At pan,tilt: ",span,",",stilt,": ir Distance:", ir, " sonic distance: ", distance
 
                   #volts=min(1,ir*0.0048828125);  # // value from sensor * (5/1024) - if running 3.3.volts then change 5 to 3.3
                   volts=min(1,ir*0.002929688);  # // value from sensor * (5/1024) - if running 3.3.volts then change 5 to 3.3
 
                   actdist=65*pow(volts, -1.10);  #        // worked out from graph 65 = theretical distance / (1/Volts)S - luckylarry.co.uk
 
-                  print "ir act distance: ",actdist
+                  #print "ir act distance: ",actdist
+
 	          # TODO: Save values and pos so build map
-                  pts.append( ( 
+
+                  # rescale reading to ascii value
+
+                  m=200
+                  rwidth=m/12
+                  #print  max(m,ir)/rwidth 
+                  c=ASCII_CHARS[ max(m,ir)/rwidth ]
+
+                  irLine = irLine + c
+
+
+                  c=ASCII_CHARS[ max(m,distance)/rwidth ]
+
+                  sonLine = sonLine + c
+
+               print sonLine, ":", irLine
+
              pz.setOutput (pan, panVal)
              pz.setOutput (tilt, tiltVal)
         elif keyp == '8' or keyp == 'i' or ord(keyp) == 17:
@@ -188,8 +217,14 @@ try:
 
         ir = pz.readInput(irSen)
         distance = int(hcsr04.getDistance())
-        print "Rear Distance:", distance, " iR Distance:", ir, 
+        print "Sonar Distance:", distance, " iR Distance:", ir, 
 
+        # coli detection
+
+        if( distance < 20 ):
+            pz.stop()
+            print "Stopping.... Something too close"
+      
 except KeyboardInterrupt:
     print
 
