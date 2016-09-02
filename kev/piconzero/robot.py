@@ -112,11 +112,11 @@ try:
                               
              print "Distance Map"               
              print "Sonar                    : ir"
-             for span in range( 40, 75,5 ):
+             for span in range( 49, 75, 3 ):
                irLine=""
                sonLine=""
 
-               for stilt in range( 30, 150, 5 ):
+               for stilt in range( 150, 30, -3 ):
                   pz.setOutput (pan, span)
                   pz.setOutput (tilt, stilt)
                   time.sleep( 0.15)
@@ -137,13 +137,18 @@ try:
 
                   m=200
                   rwidth=m/12
-                  #print  max(m,ir)/rwidth 
-                  c=ASCII_CHARS[ max(m,ir)/rwidth ]
-
+                  #print  max(m,ir/rwidth )
+                  r=min(m,ir)/rwidth
+                  c=ASCII_CHARS[ r ]
+                  #print r
                   irLine = irLine + c
 
-
-                  c=ASCII_CHARS[ max(m,distance)/rwidth ]
+                  m=80
+                  rwidth=m/12
+                  r=min(m,distance)/rwidth
+                  c=ASCII_CHARS[ r ]
+                  #print r, distance
+                  #c=ASCII_CHARS[ max(m,distance)/rwidth ]
 
                   sonLine = sonLine + c
 
