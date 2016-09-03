@@ -14,14 +14,15 @@ import tty
 import termios
 import hcsr04
 import select
-#import curses
+import curses
 import random
 from bisect import bisect
 
-#stdscr = curses.initscr()
-#curses.noecho()
-#curses.cbreak()
-#stdscr.keypad(1)
+stdscr = curses.initscr()
+curses.noecho()
+curses.cbreak()
+stdscr.keypad(1)
+nodelay(1)
 hcsr04.init()
 
 
@@ -90,9 +91,10 @@ def GetChar(Block=True):
 # window setup
 
 
-#helpWin = curses.newwin(5, 80, 0, 0)
-#sensorWin = curses.newwin(1,80, 6, 0
-#scanWin = curses.newwin(30, 80, 7, 0)
+helpWin = curses.newwin(5, 80, 0, 0)
+sensorWin = curses.newwin(1,80, 6, 0
+statusWin = curses.newwin(1,80, 7, 0
+scanWin = curses.newwin(30, 80, 10, 0)
 
 
 
@@ -128,15 +130,13 @@ fwdTilt=90
 pz.setOutput (pan, panVal)
 pz.setOutput (tilt, tiltVal)
 pz.setOutput (cam, camVal)
-print "Tests the motors by using the arrow keys to control. number keys. 5 to stop. IJLM. K=stop"
-print "Use , or < to slow down"
-print "Use . or > to speed up"
-print "V to distance scan"
-print "Move cam. F and G "
-print "Neck. WADZ. S = centre"
-print "Speed changes take effect when the next arrow key is pressed"
-print "Press Ctrl-C to end"
-print
+helpWin.addstr(0,0, "Tests the motors by using the arrow keys to control. number keys. 5 to stop. IJLM. K=stop")
+helpWin.addstr(1, 0, "Use , or < to slow down. Use . or > to speed up. V to distance scan")
+helpWin.addstr(2,0, "Move cam. F and G. Neck. WADZ. S = centre")
+helpWin.refresh()
+#print "Speed changes take effect when the next arrow key is pressed"
+#print "Press Ctrl-C to end"
+#print
 
 
 # main loop
@@ -147,10 +147,11 @@ try:
         #keyp = GetChar(False)
         if keyp == '2' or keyp == 'm' or ord(keyp) == 16:
             pz.forward(speed)
-            print 'Reverse', speed
+            statusWin.addch(0,0, 'Reverse', speed)
         elif keyp == 'v':
              pz.stop()
              pts = []
+             row=1
 
 	     ASCII_CHARS = [ '#', '?', '%', '.', 'S', '+', '.', '-', '*', ':', ',', '@',' ',' ']
 
@@ -158,8 +159,8 @@ try:
 
 
                               
-             print "Distance Map"               
-             print "Sonar                    : ir"
+             scanWin.addstr(0,0,"Distance Map"          )
+             scanWin.addstr(1,0, "Sonar                    : ir")
              for span in range( 49, 75, 3 ):
                irLine=""
                sonLine=""
@@ -197,7 +198,8 @@ try:
                   #sonLine = sonLine + c
                   sonLine = sonLine + asciiSensor(80, distance )
 
-               print sonLine, ":", irLine
+               scanWin.addstr(row++,0, sonLine, ":", irLine)
+               scanWin.refresh()
 
              pz.setOutput (pan, panVal)
              pz.setOutput (tilt, tiltVal)
@@ -207,41 +209,41 @@ try:
             pz.setOutput (pan, panVal)
             pz.setOutput (tilt, tiltVal)
             pz.reverse(speed)
-            print 'Forward', speed
+            statusWin.addstr(0,0,'Forward', speed)
         elif keyp == '4' or keyp == 'j' or ord(keyp) == 18:
             pz.spinRight(turnSpeed)
-            print 'Spin Right', speed
+            statusWin.addstr(0,0, 'Spin Right', speed)
         elif keyp == '6' or keyp == 'l' or ord(keyp) == 19:
             pz.spinLeft(turnSpeed)
-            print 'Spin Left', speed
+            statusWin.addstr(0,0, 'Spin Left', speed)
         elif keyp == '.' or keyp == '>':
             speed = min(100, speed+10)
-            print 'Speed+', speed
+            statusWin.addstr(0,0, 'Speed+', speed)
         elif keyp == ',' or keyp == '<':
             speed = max (0, speed-10)
-            print 'Speed-', speed
+            statusWin.addstr(0,0, 'Speed-', speed)
         elif keyp == 'w':
             panVal = max (0, panVal - 5)
-            print 'Up', panVal
+            statusWin.addstr(0,0, 'Up', panVal)
             pz.setOutput (pan, panVal)
             pz.setOutput (tilt, tiltVal)
         elif keyp == 'z':
             panVal = min (180, panVal + 5)
-            print 'Down', panVal
+            statusWin.addstr(0,0, 'Down', panVal)
             pz.setOutput (pan, panVal)
             pz.setOutput (tilt, tiltVal)
         elif keyp == 'd' :
             tiltVal = max (0, tiltVal - 5)
-            print 'Right', tiltVal
+            statusWin.addstr(0,0,'Right', tiltVal)
             pz.setOutput (pan, panVal)
             pz.setOutput (tilt, tiltVal)
         elif keyp == 'a' :
             tiltVal = min (180, tiltVal + 5)
-            print 'Left', tiltVal
+            statusWin.addstr(0,0, 'Left', tiltVal)
             pz.setOutput (pan, panVal)
             pz.setOutput (tilt, tiltVal)
         elif keyp == 'f':
-            print 'Cam', camVal
+            #print 'Cam', camVal
             pz.setOutput (cam, 100)
             time.sleep(0.1)
             pz.setOutput( cam, 90)
@@ -255,29 +257,30 @@ try:
                 exit
         elif keyp == 's':
             panVal = tiltVal = 90
-            print 'Centre'
+            #print 'Centre'
             pz.setOutput (pan, panVal)
             pz.setOutput (tilt, tiltVal)
         elif ord(keyp) == 3:
             break
         elif keyp == '5' or keyp == 'k':
             pz.stop()
-            print 'Stop'
+            statusWin.addstr(0,0,'Stop')
         elif ord(keyp) == 3:
             break
 
 
-
+        statusWin.refresh()
 
         ir = pz.readInput(irSen)
         distance = int(hcsr04.getDistance())
-        print "Sonar Distance:", distance, " iR Distance:", ir, 
+        sensorWin.addstr(0,0, "Sonar Distance:", distance, " iR Distance:", ir, )
 
         # coli detection
 
         if( distance < 20 ):
             pz.stop()
-            print "Stopping.... Something too close"
+            statusWin.addstr(1,0, "Stopping.... Something too close")
+            statusWin.refresh()
       
 except KeyboardInterrupt:
     print
