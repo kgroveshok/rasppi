@@ -22,7 +22,7 @@ stdscr = curses.initscr()
 curses.noecho()
 curses.cbreak()
 stdscr.keypad(1)
-nodelay(1)
+#nodelay(1)
 hcsr04.init()
 
 
@@ -92,11 +92,14 @@ def GetChar(Block=True):
 
 
 helpWin = curses.newwin(5, 80, 0, 0)
-sensorWin = curses.newwin(1,80, 6, 0
-statusWin = curses.newwin(1,80, 7, 0
-scanWin = curses.newwin(30, 80, 10, 0)
+sensorWin = curses.newwin(3,80, 6, 0)
+statusWin = curses.newwin(5,80, 9, 0)
+scanWin = curses.newwin(30, 90, 15, 0)
 
-
+helpWin.border()
+sensorWin.border()
+statusWin.border()
+scanWin.border()
 
 
 # End of single character reading
@@ -130,9 +133,9 @@ fwdTilt=90
 pz.setOutput (pan, panVal)
 pz.setOutput (tilt, tiltVal)
 pz.setOutput (cam, camVal)
-helpWin.addstr(0,0, "Tests the motors by using the arrow keys to control. number keys. 5 to stop. IJLM. K=stop")
-helpWin.addstr(1, 0, "Use , or < to slow down. Use . or > to speed up. V to distance scan")
-helpWin.addstr(2,0, "Move cam. F and G. Neck. WADZ. S = centre")
+helpWin.addstr(1,1, "Tests the motors by using the arrow keys to control. number keys. 5 to stop. IJLM. K=stop")
+helpWin.addstr(2, 1, "Use , or < to slow down. Use . or > to speed up. V to distance scan")
+helpWin.addstr(3,1, "Move cam. F and G. Neck. WADZ. S = centre")
 helpWin.refresh()
 #print "Speed changes take effect when the next arrow key is pressed"
 #print "Press Ctrl-C to end"
@@ -143,24 +146,26 @@ helpWin.refresh()
 try:
     while True:
         #keyp = readkey()
-        keyp = readchar()
-        #keyp = GetChar(False)
+        #keyp = readchar()
+        keyp = GetChar(False)
         if keyp == '2' or keyp == 'm' or ord(keyp) == 16:
             pz.forward(speed)
-            statusWin.addch(0,0, 'Reverse', speed)
+            #statusWin.clear()
+            statusWin.addstr(1,1, 'Reverse '+ str(speed)+"    ")
         elif keyp == 'v':
              pz.stop()
              pts = []
-             row=1
+             row=2
 
+             #scanWin.clear()
 	     ASCII_CHARS = [ '#', '?', '%', '.', 'S', '+', '.', '-', '*', ':', ',', '@',' ',' ']
 
 
 
 
                               
-             scanWin.addstr(0,0,"Distance Map"          )
-             scanWin.addstr(1,0, "Sonar                    : ir")
+             scanWin.addstr(1,1,"Distance Map"          )
+             scanWin.addstr(2,1, "Sonar                    : ir")
              for span in range( 49, 75, 3 ):
                irLine=""
                sonLine=""
@@ -198,7 +203,8 @@ try:
                   #sonLine = sonLine + c
                   sonLine = sonLine + asciiSensor(80, distance )
 
-               scanWin.addstr(row++,0, sonLine, ":", irLine)
+               row=row+1
+               scanWin.addstr(row,1, sonLine+ " | "+ str(irLine))
                scanWin.refresh()
 
              pz.setOutput (pan, panVal)
@@ -209,37 +215,46 @@ try:
             pz.setOutput (pan, panVal)
             pz.setOutput (tilt, tiltVal)
             pz.reverse(speed)
-            statusWin.addstr(0,0,'Forward', speed)
+            #statusWin.clear()
+            statusWin.addstr(1,1,'Forward '+ str(speed)+"     ")
         elif keyp == '4' or keyp == 'j' or ord(keyp) == 18:
             pz.spinRight(turnSpeed)
-            statusWin.addstr(0,0, 'Spin Right', speed)
+            #statusWin.clear()
+            statusWin.addstr(1,1, 'Spin Right '+ str(speed)+"    ")
         elif keyp == '6' or keyp == 'l' or ord(keyp) == 19:
             pz.spinLeft(turnSpeed)
-            statusWin.addstr(0,0, 'Spin Left', speed)
+            #statusWin.clear()
+            statusWin.addstr(1,1, 'Spin Left '+ str(speed)+"     ")
         elif keyp == '.' or keyp == '>':
             speed = min(100, speed+10)
-            statusWin.addstr(0,0, 'Speed+', speed)
+            #statusWin.clear()
+            statusWin.addstr(1,1, 'Speed+ '+ str(speed)+"     ")
         elif keyp == ',' or keyp == '<':
             speed = max (0, speed-10)
-            statusWin.addstr(0,0, 'Speed-', speed)
+            #statusWin.clear()
+            statusWin.addstr(1,1, 'Speed- '+ str(speed)+"    ")
         elif keyp == 'w':
             panVal = max (0, panVal - 5)
-            statusWin.addstr(0,0, 'Up', panVal)
+            #statusWin.clear()
+            statusWin.addstr(1,1, 'Up ' + str(panVal)+"    ")
             pz.setOutput (pan, panVal)
             pz.setOutput (tilt, tiltVal)
         elif keyp == 'z':
             panVal = min (180, panVal + 5)
-            statusWin.addstr(0,0, 'Down', panVal)
+            #statusWin.clear()
+            statusWin.addstr(1,1, 'Down '+ str(panVal)+"   ")
             pz.setOutput (pan, panVal)
             pz.setOutput (tilt, tiltVal)
         elif keyp == 'd' :
             tiltVal = max (0, tiltVal - 5)
-            statusWin.addstr(0,0,'Right', tiltVal)
+            #statusWin.clear()
+            statusWin.addstr(1,1,'Right '+ str(tiltVal)+"      ")
             pz.setOutput (pan, panVal)
             pz.setOutput (tilt, tiltVal)
         elif keyp == 'a' :
             tiltVal = min (180, tiltVal + 5)
-            statusWin.addstr(0,0, 'Left', tiltVal)
+            #statusWin.clear()
+            statusWin.addstr(1,1, 'Left '+ str(tiltVal)+"     ")
             pz.setOutput (pan, panVal)
             pz.setOutput (tilt, tiltVal)
         elif keyp == 'f':
@@ -264,7 +279,7 @@ try:
             break
         elif keyp == '5' or keyp == 'k':
             pz.stop()
-            statusWin.addstr(0,0,'Stop')
+            statusWin.addstr(1,1,'Stop')
         elif ord(keyp) == 3:
             break
 
@@ -273,13 +288,17 @@ try:
 
         ir = pz.readInput(irSen)
         distance = int(hcsr04.getDistance())
-        sensorWin.addstr(0,0, "Sonar Distance:", distance, " iR Distance:", ir, )
+        #sensorWin.clear()
+        sensorWin.addstr(1,1, "Sonar Distance: "+ str(distance)+"    ")
+        sensorWin.addstr(1,40, " iR Distance: "+ str(ir)+"        " )
+        sensorWin.refresh()
 
         # coli detection
 
         if( distance < 20 ):
             pz.stop()
-            statusWin.addstr(1,0, "Stopping.... Something too close")
+            #statusWin.clear()
+            statusWin.addstr(2,1, "Stopping.... Something too close      ")
             statusWin.refresh()
       
 except KeyboardInterrupt:
