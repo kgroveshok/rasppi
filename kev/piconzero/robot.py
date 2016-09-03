@@ -14,9 +14,14 @@ import tty
 import termios
 import hcsr04
 import select
+#import curses
 import random
 from bisect import bisect
 
+#stdscr = curses.initscr()
+#curses.noecho()
+#curses.cbreak()
+#stdscr.keypad(1)
 hcsr04.init()
 
 
@@ -82,6 +87,12 @@ def GetChar(Block=True):
     return sys.stdin.read(1)
   return '0'
 
+# window setup
+
+
+#helpWin = curses.newwin(5, 80, 0, 0)
+#sensorWin = curses.newwin(1,80, 6, 0
+#scanWin = curses.newwin(30, 80, 7, 0)
 
 
 
@@ -238,6 +249,10 @@ try:
             pz.setOutput (cam, 80)
             time.sleep(0.1)
             pz.setOutput( cam, 90)
+        elif keyp =='q':
+                curses.nocbreak(); stdscr.keypad(0); curses.echo()
+                curses.endwin()
+                exit
         elif keyp == 's':
             panVal = tiltVal = 90
             print 'Centre'
