@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # Picon Zero Motor Test
 # Moves: Forward, Reverse, turn Right, turn Left, Stop - then repeat
 # Press Ctrl-C to stop
@@ -13,10 +14,43 @@ import tty
 import termios
 import hcsr04
 import select
+import random
+from bisect import bisect
 
 hcsr04.init()
 
 
+def asciiSensor( maxVal, reading ):
+
+    # algo source https://stevendkay.wordpress.com/2009/09/08/generating-ascii-art-from-photographs-in-python/
+    mval=min(maxVal, reading)
+
+    greyscale = [
+                " ",
+                " ",
+                ".,-",
+                "_ivc=!/|\\~",
+                "gjez2]/(YL)t[+T7Vf",
+                "mdK4ZGbNDXY5P*Q",
+                "W8KMA",
+                "#%$"
+                ]
+
+
+    zonebounds=[36,72,108,144,180,216,252]
+   
+    # rescale the distance to fixed range
+
+    OldRange = (maxVal - 0)  
+    NewRange = (255 - 0)  
+    NewValue = (((mval - 0) * NewRange) / OldRange) + 0
+
+ 
+
+    lum=255-NewValue
+    row=bisect(zonebounds,lum)
+    possibles=greyscale[row]
+    return possibles[random.randint(0,len(possibles)-1)]
 
 
 
@@ -78,7 +112,7 @@ pz.setInputConfig(irSen, 1)     # set input 0 to Analog
 panVal = 90
 tiltVal = 90
 camVal = 90
-fwdPan=75
+fwdPan=90
 fwdTilt=90
 pz.setOutput (pan, panVal)
 pz.setOutput (tilt, tiltVal)
@@ -107,7 +141,10 @@ try:
              pz.stop()
              pts = []
 
-	     ASCII_CHARS = [ '#', '?', '%', '.', 'S', '+', '.', '-', '*', ':', ',', '@',' ']
+	     ASCII_CHARS = [ '#', '?', '%', '.', 'S', '+', '.', '-', '*', ':', ',', '@',' ',' ']
+
+
+
 
                               
              print "Distance Map"               
@@ -119,7 +156,7 @@ try:
                for stilt in range( 150, 30, -3 ):
                   pz.setOutput (pan, span)
                   pz.setOutput (tilt, stilt)
-                  time.sleep( 0.15)
+                  time.sleep( 0.1)
                   ir = pz.readInput(irSen)
                   distance = int(hcsr04.getDistance())
                   #print "At pan,tilt: ",span,",",stilt,": ir Distance:", ir, " sonic distance: ", distance
@@ -135,22 +172,19 @@ try:
 
                   # rescale reading to ascii value
 
-                  m=200
-                  rwidth=m/12
-                  #print  max(m,ir/rwidth )
-                  r=min(m,ir)/rwidth
-                  c=ASCII_CHARS[ r ]
-                  #print r
-                  irLine = irLine + c
+                  #m=200
+                  #rwidth=m/12
+                  #r=min(m,ir)/rwidth
+                  #c=ASCII_CHARS[ min(m,r) ]
+                  #irLine = irLine + c
+                  irLine = irLine + asciiSensor( 400, 400-min(400,ir) ) 
 
-                  m=80
-                  rwidth=m/12
-                  r=min(m,distance)/rwidth
-                  c=ASCII_CHARS[ r ]
-                  #print r, distance
-                  #c=ASCII_CHARS[ max(m,distance)/rwidth ]
-
-                  sonLine = sonLine + c
+                  #m=80
+                  #rwidth=m/12
+                  #r=min(m,distance)/rwidth
+                  #c=ASCII_CHARS[ min(m,r) ]
+                  #sonLine = sonLine + c
+                  sonLine = sonLine + asciiSensor(80, distance )
 
                print sonLine, ":", irLine
 
