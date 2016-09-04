@@ -133,6 +133,11 @@ tiltVal = 90
 camVal = 90
 fwdPan=90
 fwdTilt=90
+
+# value to monitor for sudden distance change and to stop on significant change
+fwdSafe=0
+
+
 pz.setOutput (pan, panVal)
 pz.setOutput (tilt, tiltVal)
 pz.setOutput (cam, camVal)
@@ -267,6 +272,8 @@ try:
             pz.reverse(speed)
             #statusWin.clear()
             statusWin.addstr(1,1,'Forward '+ str(speed)+"     ")
+            # get safe value
+            fwdSafe = int(hcsr04.getDistance())
         elif keyp == '4' or keyp == 'j' or ord(keyp) == 18:
             pz.spinRight(turnSpeed)
             #statusWin.clear()
@@ -340,13 +347,16 @@ try:
         distance = int(hcsr04.getDistance())
         #sensorWin.clear()
         sensorWin.addstr(1,1, "Sonar Distance: "+ str(distance)+"    ")
+        sensorWin.addstr(1,30, " Safe: "+ str(fwdSafe)+"        " )
         sensorWin.addstr(1,40, " iR Distance: "+ str(ir)+"        " )
         sensorWin.refresh()
 
         # coli detection
 
-        if( distance < 20 ):
+        if( distance < fwdSafe ):
             pz.stop()
+            # clear value so it does not prevent any turning to avoid!
+            fwdSafe=100
             #statusWin.clear()
             statusWin.addstr(2,1, "Stopping.... Something too close      ")
             statusWin.refresh()
