@@ -18,8 +18,10 @@ import termios
 import hcsr04
 import select
 import curses
+from shutil import copyfile
 import random
 from bisect import bisect
+
 
 stdscr = curses.initscr()
 curses.noecho()
@@ -127,12 +129,18 @@ pz.setOutputConfig(cam, 2)
 
 pz.setInputConfig(irSen, 1)     # set input 0 to Analog
 
+leftCounter=1
+rightCounter=0
+
+pz.setInputConfig(leftCounter, 0)     # set input 0 to Analog
+pz.setInputConfig(rightCounter, 0)     # set input 0 to Analog
+
 # Centre all servos
 panVal = 90
 tiltVal = 90
 camVal = 90
 fwdPan=90
-fwdTilt=90
+fwdTilt=75
 
 # value to monitor for sudden distance change and to stop on significant change
 fwdSafe=0
@@ -143,12 +151,13 @@ pz.setOutput (tilt, tiltVal)
 pz.setOutput (cam, camVal)
 helpWin.addstr(1,1, "Tests the motors by using the arrow keys to control. num keys. 5 to stop. IJLM. K=stop")
 helpWin.addstr(2, 1, "Use , or < to slow down. Use . or > to speed up. V to distance scan")
-helpWin.addstr(3,1, "Move cam. F and G. Neck. WADZ. S = centre. opencv scan=1")
+helpWin.addstr(3,1, "Move cam. F and G. Neck. WADZ. S = centre. opencv scan=E. R=save webcam")
 helpWin.refresh()
 #print "Speed changes take effect when the next arrow key is pressed"
 #print "Press Ctrl-C to end"
 #print
 
+# TODO key to save all images...
 
 # main loop
 try:
@@ -160,7 +169,13 @@ try:
             pz.forward(speed)
             #statusWin.clear()
             statusWin.addstr(1,1, 'Reverse '+ str(speed)+"    ")
-        elif keyp == '1':
+        elif keyp == 'r':
+            prefix=str(time.time())
+            copyfile("/dev/shm/lastsnap.jpg","/home/pi/"+prefix+"_lastsnap.jpg")
+            copyfile("/dev/shm/p3.png","/home/pi/"+prefix+"_p3.png")
+            copyfile("/dev/shm/p4.png","/home/pi/"+prefix+"_p4.png")
+            statusWin.addstr(1,1, 'Saved webcam and opencv images to prefix '+prefix)
+        elif keyp == 'e':
 
 
             img = Image("/dev/shm/lastsnap.jpg")
@@ -221,7 +236,7 @@ try:
                               
              scanWin.addstr(1,1,"Distance Map"          )
              scanWin.addstr(2,1, "Sonar                    : ir")
-             for span in range( 49, 75, 3 ):
+             for span in range( 39, 75, 3 ):
                irLine=""
                sonLine=""
 
@@ -272,8 +287,15 @@ try:
             pz.reverse(speed)
             #statusWin.clear()
             statusWin.addstr(1,1,'Forward '+ str(speed)+"     ")
-            # get safe value
-            fwdSafe = int(hcsr04.getDistance())
+            # get a sample for safe value
+
+            fwdSafe=0
+            for c in range(0,100):
+                fwdSafe = max(fwdSafe, int(hcsr04.getDistance()))
+
+ 
+            
+
         elif keyp == '4' or keyp == 'j' or ord(keyp) == 18:
             pz.spinRight(turnSpeed)
             #statusWin.clear()
@@ -326,9 +348,10 @@ try:
         elif keyp =='q':
                 curses.nocbreak(); stdscr.keypad(0); curses.echo()
                 curses.endwin()
-                exit
+                abort()
         elif keyp == 's':
-            panVal = tiltVal = 90
+            panVal = 90
+            tiltVal = 75
             #print 'Centre'
             pz.setOutput (pan, panVal)
             pz.setOutput (tilt, tiltVal)
@@ -345,18 +368,24 @@ try:
 
         ir = pz.readInput(irSen)
         distance = int(hcsr04.getDistance())
+        leftRev=pz.readInput(leftCounter)
+        rightRev=pz.readInput(rightCounter)
         #sensorWin.clear()
         sensorWin.addstr(1,1, "Sonar Distance: "+ str(distance)+"    ")
         sensorWin.addstr(1,30, " Safe: "+ str(fwdSafe)+"        " )
         sensorWin.addstr(1,40, " iR Distance: "+ str(ir)+"        " )
+        sensorWin.addstr(2,1, "Left Counter: "+ str(leftRev)+"        " )
+        sensorWin.addstr(2,30, "Right Counter: "+ str(rightRev)+"        " )
+
+
         sensorWin.refresh()
 
         # coli detection
 
         if( distance < fwdSafe ):
-            pz.stop()
+            #pz.stop()
             # clear value so it does not prevent any turning to avoid!
-            fwdSafe=100
+            #fwdSafe=0
             #statusWin.clear()
             statusWin.addstr(2,1, "Stopping.... Something too close      ")
             statusWin.refresh()
