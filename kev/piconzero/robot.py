@@ -7,6 +7,9 @@
 
 import piconzero as pz, time
 
+import subprocess
+from SimpleCV import Color, Image
+import time
 #======================================================================
 # Reading single character by forcing stdin to raw mode
 import sys
@@ -93,7 +96,7 @@ def GetChar(Block=True):
 
 helpWin = curses.newwin(5, 80, 0, 0)
 sensorWin = curses.newwin(3,80, 6, 0)
-statusWin = curses.newwin(5,80, 9, 0)
+statusWin = curses.newwin(7,80, 9, 0)
 scanWin = curses.newwin(30, 90, 15, 0)
 
 helpWin.border()
@@ -133,9 +136,9 @@ fwdTilt=90
 pz.setOutput (pan, panVal)
 pz.setOutput (tilt, tiltVal)
 pz.setOutput (cam, camVal)
-helpWin.addstr(1,1, "Tests the motors by using the arrow keys to control. number keys. 5 to stop. IJLM. K=stop")
+helpWin.addstr(1,1, "Tests the motors by using the arrow keys to control. num keys. 5 to stop. IJLM. K=stop")
 helpWin.addstr(2, 1, "Use , or < to slow down. Use . or > to speed up. V to distance scan")
-helpWin.addstr(3,1, "Move cam. F and G. Neck. WADZ. S = centre")
+helpWin.addstr(3,1, "Move cam. F and G. Neck. WADZ. S = centre. opencv scan=1")
 helpWin.refresh()
 #print "Speed changes take effect when the next arrow key is pressed"
 #print "Press Ctrl-C to end"
@@ -152,6 +155,53 @@ try:
             pz.forward(speed)
             #statusWin.clear()
             statusWin.addstr(1,1, 'Reverse '+ str(speed)+"    ")
+        elif keyp == '1':
+
+
+            img = Image("/dev/shm/lastsnap.jpg")
+
+
+            object = img.hueDistance(Color.BLUE)
+            object.save("/dev/shm/p3.png")
+
+            #blobs = blue_distance.findBlobs()
+
+            #object.draw(color=Color.PUCE, width=2)
+            #blue_distance.show()
+            #blue_distance.save("/dev/shm/p3.png")
+
+            corners=img.findCorners()
+
+            statusWin.clear()
+            statusWin.addstr( 1, 1,  str(object.meanColor()))
+
+            num_corners = len(corners)
+            statusWin.addstr(2,1, "Corners Found:" + str(num_corners))
+
+            corners.draw()
+
+            img.addDrawingLayer(object.dl())
+
+
+            # circle tracking
+
+            #dist = img.colorDistance(Color.BLACK).dilate(2)
+            #segmented = dist.stretch(200,255)
+
+            blobs = img.findBlobs()
+            if blobs:
+                    circles = blobs.filter([b.isCircle(0.2) for b in blobs])
+                    if circles:
+                        img.drawCircle((circles[-1].x, circles[-1].y), circles[-1].radius(),Color.BLUE,3)
+
+
+
+
+            img.save("/dev/shm/p4.png")
+
+            #img.save(js.framebuffer)
+
+
         elif keyp == 'v':
              pz.stop()
              pts = []

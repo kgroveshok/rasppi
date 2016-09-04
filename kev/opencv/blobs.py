@@ -3,7 +3,7 @@ import subprocess
 from SimpleCV import Color, Image
 import time
 img = Image("/dev/shm/lastsnap.jpg")
-img.save("p1.png")
+img.save("/dev/shm/p1.png")
 #img = img.binarize()
 #macchie = img.findBlobs()
 #img.save("p2.png")
@@ -21,8 +21,8 @@ blobs = blue_distance.findBlobs()
 
 blobs.draw(color=Color.PUCE, width=2)
 #blue_distance.show()
-blue_distance.save("p3.png")
+blue_distance.save("/dev/shm/p3.png")
 
 img.addDrawingLayer(blue_distance.dl())
 
-img.save("p4.png")
+img.save("/dev/shm/p4.png")
