@@ -31,6 +31,8 @@ stdscr.keypad(1)
 hcsr04.init()
 
 
+sensorLast=0
+
 def asciiSensor( maxVal, reading ):
 
     # algo source https://stevendkay.wordpress.com/2009/09/08/generating-ascii-art-from-photographs-in-python/
@@ -97,7 +99,7 @@ def GetChar(Block=True):
 
 
 helpWin = curses.newwin(5, 80, 0, 0)
-sensorWin = curses.newwin(3,80, 6, 0)
+sensorWin = curses.newwin(4,80, 5, 0)
 statusWin = curses.newwin(7,80, 9, 0)
 scanWin = curses.newwin(30, 90, 15, 0)
 
@@ -129,8 +131,17 @@ pz.setOutputConfig(cam, 2)
 
 pz.setInputConfig(irSen, 1)     # set input 0 to Analog
 
+# input pins to use
 leftCounter=1
 rightCounter=0
+
+# current sensor state
+leftState=0
+rightState=0
+
+# running total of change of state
+leftTotal=0
+rightTotal=0
 
 pz.setInputConfig(leftCounter, 0)     # set input 0 to Analog
 pz.setInputConfig(rightCounter, 0)     # set input 0 to Analog
@@ -145,6 +156,8 @@ fwdTilt=75
 # value to monitor for sudden distance change and to stop on significant change
 fwdSafe=0
 
+distance=0
+ir=0
 
 pz.setOutput (pan, panVal)
 pz.setOutput (tilt, tiltVal)
@@ -284,14 +297,17 @@ try:
             tiltVal = fwdTilt
             pz.setOutput (pan, panVal)
             pz.setOutput (tilt, tiltVal)
-            pz.reverse(speed)
-            #statusWin.clear()
-            statusWin.addstr(1,1,'Forward '+ str(speed)+"     ")
+
+            pz.stop()
             # get a sample for safe value
 
             fwdSafe=0
-            for c in range(0,100):
+            for c in range(0,20):
                 fwdSafe = max(fwdSafe, int(hcsr04.getDistance()))
+                time.sleep(0.1)
+            pz.reverse(speed)
+            #statusWin.clear()
+            statusWin.addstr(1,1,'Forward '+ str(speed)+"     ")
 
  
             
@@ -366,16 +382,32 @@ try:
 
         statusWin.refresh()
 
-        ir = pz.readInput(irSen)
-        distance = int(hcsr04.getDistance())
+        if sensorLast < time.time(): 
+            ir = pz.readInput(irSen)
+            distance = int(hcsr04.getDistance())
+            t=int(time.time())
+            sensorLast=t+1
+
+        
+
         leftRev=pz.readInput(leftCounter)
+        if leftRev <> leftState:
+             leftTotal = leftTotal + 1
+
         rightRev=pz.readInput(rightCounter)
+
+        if rightRev <> rightState:
+             rightTotal = rightTotal + 1
+
+        leftState=leftRev
+        rightState=rightRev
+
         #sensorWin.clear()
         sensorWin.addstr(1,1, "Sonar Distance: "+ str(distance)+"    ")
         sensorWin.addstr(1,30, " Safe: "+ str(fwdSafe)+"        " )
         sensorWin.addstr(1,40, " iR Distance: "+ str(ir)+"        " )
-        sensorWin.addstr(2,1, "Left Counter: "+ str(leftRev)+"        " )
-        sensorWin.addstr(2,30, "Right Counter: "+ str(rightRev)+"        " )
+        sensorWin.addstr(2,1, "Left Counter: "+ str(leftTotal)+"        " )
+        sensorWin.addstr(2,30, "Right Counter: "+ str(rightTotal)+"        " )
 
 
         sensorWin.refresh()
