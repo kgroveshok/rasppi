@@ -276,7 +276,7 @@ try:
 
              # create image
             
-             sonarImg=Image.new('RGB',(1024,1024))
+             sonarImg=Image.new('RGB',(1024,1024),(255,255,255))
              #irImg=Image.new('RGB',(1024,1024))
               
 
@@ -307,10 +307,38 @@ try:
 
                   irLine = irLine + asciiSensor( 400, 400-min(400,ir) ) 
                   #irImg.putpixel( ( stilt, span), pixelSensor( 400, 400-min(400,ir) ) ) 
-                  sonarImg.putpixel( ( stilt+200, span), (pixelSensor( 400, 400-min(400,ir) ),0,0) ) 
+                  px=pixelSensor( 400, 400-min(400,ir) )
+                  px2=(px,px,0)
+                  sonarImg.putpixel( ( stilt+200, span), px2) 
+                  sonarImg.putpixel( ( stilt+200, span+1), px2) 
+                  sonarImg.putpixel( ( stilt+200, span+2), px2) 
+
+
+                  sonarImg.putpixel( ( stilt+201, span), px2) 
+                  sonarImg.putpixel( ( stilt+201, span+1), px2) 
+                  sonarImg.putpixel( ( stilt+201, span+2), px2) 
+
+                  sonarImg.putpixel( ( stilt+202, span), px2) 
+                  sonarImg.putpixel( ( stilt+202, span+1), px2) 
+                  sonarImg.putpixel( ( stilt+202, span+2), px2) 
+                  #sonarImg.putpixel( ( stilt+200, span), (pixelSensor( 400, 400-min(400,ir) ),0,0) ) 
 
                   sonLine = sonLine + asciiSensor(80, distance )
-                  sonarImg.putpixel( (stilt, span), (pixelSensor(80, distance ),0,0))
+                  px=pixelSensor(80, distance )
+                  px2=(px,px,0)
+                  #sonarImg.putpixel( (stilt, span), (pixelSensor(80, distance ),0,0))
+
+                  sonarImg.putpixel( (stilt, span), px2)
+                  sonarImg.putpixel( (stilt, span+1), px2)
+                  sonarImg.putpixel( (stilt, span+2), px2)
+
+                  sonarImg.putpixel( (stilt+1, span), px2)
+                  sonarImg.putpixel( (stilt+1, span+1), px2)
+                  sonarImg.putpixel( (stilt+1, span+2), px2)
+
+                  sonarImg.putpixel( (stilt+2, span), px2)
+                  sonarImg.putpixel( (stilt+2, span+1), px2)
+                  sonarImg.putpixel( (stilt+2, span+2), px2)
 
                row=row+1
                scanWin.addstr(row,1, sonLine+ " | "+ str(irLine))
