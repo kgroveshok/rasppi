@@ -1,17 +1,33 @@
 #!/usr/bin/python
-# Picon Zero Motor Test
-# Moves: Forward, Reverse, turn Right, turn Left, Stop - then repeat
-# Press Ctrl-C to stop
+# Based on Picon Zero Motor Test
 #
-# To check wiring is correct ensure the order of movement as above is correct
+# robot hardware:
+#  4init 4wd bot base
+#  sharp ir sensor
+#  ultrasonic sensor
+#  pan/tilt arm (2 x servo)
+#  usb webcam mounted on continuois servo (becase lacking a 180deg servo)
+#  piconzero controller
+#    motors connected h-bridge
+#    ultrasonic on deadicated connection
+#    ir on input pin 3
+#    wheel rotation counters on pins 0 and 1
+#    arm pan/tilt on output 0 and 1
+#    webcam server on output 2
+#
+# software:
+#  python
+#  opencv/simplecv
+#  motion (with single image and video streaming)
+#  piconzero requirements for i2c
+#  lighttpd for access to motion/opencv image processing
+# 
 
 import piconzero as pz, time
 
 import subprocess
 from SimpleCV import Color, Image
 import time
-#======================================================================
-# Reading single character by forcing stdin to raw mode
 import sys
 import tty
 import termios
@@ -31,9 +47,10 @@ stdscr.keypad(1)
 hcsr04.init()
 
 
-sensorLast=0
 
 def asciiSensor( maxVal, reading ):
+    # convert a sensor reading into an ASCII form for easy render on terminal
+    # TODO generate an image depth map version too as opencv now includes view of images via web server
 
     # algo source https://stevendkay.wordpress.com/2009/09/08/generating-ascii-art-from-photographs-in-python/
     mval=min(maxVal, reading)
@@ -97,7 +114,6 @@ def GetChar(Block=True):
 
 # window setup
 
-
 helpWin = curses.newwin(5, 80, 0, 0)
 sensorWin = curses.newwin(4,80, 5, 0)
 statusWin = curses.newwin(7,80, 9, 0)
@@ -109,18 +125,33 @@ statusWin.border()
 scanWin.border()
 
 
-# End of single character reading
-#======================================================================
+# define motor speeds
 
+sensorLast=0
 speed = 60
 turnSpeed=100
 neckSpeed = 60
 
-# Define which pins are the servos
+# Define which pins are the servos and sensors
 pan = 0
 tilt = 1
 cam = 2
+
+rightCounter=0
+leftCounter=1
 irSen=3
+
+
+
+# current sensor state
+leftState=0
+rightState=0
+
+# running total of change of state
+leftTotal=0
+rightTotal=0
+
+# init all hardware
 
 pz.init()
 
@@ -131,25 +162,19 @@ pz.setOutputConfig(cam, 2)
 
 pz.setInputConfig(irSen, 1)     # set input 0 to Analog
 
-# input pins to use
-leftCounter=1
-rightCounter=0
-
-# current sensor state
-leftState=0
-rightState=0
-
-# running total of change of state
-leftTotal=0
-rightTotal=0
-
 pz.setInputConfig(leftCounter, 0)     # set input 0 to Analog
 pz.setInputConfig(rightCounter, 0)     # set input 0 to Analog
 
-# Centre all servos
+# Centre positions for all servos
 panVal = 90
 tiltVal = 90
 camVal = 90
+
+pz.setOutput (pan, panVal)
+pz.setOutput (tilt, tiltVal)
+pz.setOutput (cam, camVal)
+
+# position for 'head down' while moving forward for collis detection
 fwdPan=90
 fwdTilt=75
 
@@ -159,20 +184,13 @@ fwdSafe=0
 distance=0
 ir=0
 
-pz.setOutput (pan, panVal)
-pz.setOutput (tilt, tiltVal)
-pz.setOutput (cam, camVal)
 helpWin.addstr(1,1, "Tests the motors by using the arrow keys to control. num keys. 5 to stop. IJLM. K=stop")
 helpWin.addstr(2, 1, "Use , or < to slow down. Use . or > to speed up. V to distance scan")
 helpWin.addstr(3,1, "Move cam. F and G. Neck. WADZ. S = centre. opencv scan=E. R=save webcam")
 helpWin.refresh()
-#print "Speed changes take effect when the next arrow key is pressed"
-#print "Press Ctrl-C to end"
-#print
-
-# TODO key to save all images...
 
 # main loop
+
 try:
     while True:
         #keyp = readkey()
@@ -240,13 +258,6 @@ try:
              pts = []
              row=2
 
-             #scanWin.clear()
-	     ASCII_CHARS = [ '#', '?', '%', '.', 'S', '+', '.', '-', '*', ':', ',', '@',' ',' ']
-
-
-
-
-                              
              scanWin.addstr(1,1,"Distance Map"          )
              scanWin.addstr(2,1, "Sonar                    : ir")
              for span in range( 39, 75, 3 ):
@@ -268,22 +279,12 @@ try:
 
                   #print "ir act distance: ",actdist
 
-	          # TODO: Save values and pos so build map
+	              # TODO: Save values and pos so build map
 
                   # rescale reading to ascii value
 
-                  #m=200
-                  #rwidth=m/12
-                  #r=min(m,ir)/rwidth
-                  #c=ASCII_CHARS[ min(m,r) ]
-                  #irLine = irLine + c
                   irLine = irLine + asciiSensor( 400, 400-min(400,ir) ) 
 
-                  #m=80
-                  #rwidth=m/12
-                  #r=min(m,distance)/rwidth
-                  #c=ASCII_CHARS[ min(m,r) ]
-                  #sonLine = sonLine + c
                   sonLine = sonLine + asciiSensor(80, distance )
 
                row=row+1
