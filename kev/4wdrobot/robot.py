@@ -33,6 +33,7 @@ import tty
 import termios
 import hcsr04
 import select
+from PIL import Image
 import curses
 from shutil import copyfile
 import random
@@ -71,9 +72,7 @@ def asciiSensor( maxVal, reading ):
    
     # rescale the distance to fixed range
 
-    OldRange = (maxVal - 0)  
-    NewRange = (255 - 0)  
-    NewValue = (((mval - 0) * NewRange) / OldRange) + 0
+    NewValue = (((mval ) * 255) / maxVal) 
 
  
 
@@ -83,6 +82,18 @@ def asciiSensor( maxVal, reading ):
     return possibles[random.randint(0,len(possibles)-1)]
 
 
+def pixelSensor( maxVal, reading ):
+    # convert a sensor reading into an ASCII form for easy render on terminal
+    # TODO generate an image depth map version too as opencv now includes view of images via web server
+
+    # algo source https://stevendkay.wordpress.com/2009/09/08/generating-ascii-art-from-photographs-in-python/
+    mval=min(maxVal, reading)
+
+
+
+    NewValue = (((mval ) * 255) / maxVal) 
+
+    return 255-NewValue
 
 def readchar():
     fd = sys.stdin.fileno()
@@ -205,6 +216,7 @@ try:
             copyfile("/dev/shm/lastsnap.jpg","/home/pi/"+prefix+"_lastsnap.jpg")
             copyfile("/dev/shm/p3.png","/home/pi/"+prefix+"_p3.png")
             copyfile("/dev/shm/p4.png","/home/pi/"+prefix+"_p4.png")
+            copyfile("/dev/shm/sonar.png","/home/pi/"+prefix+"_sonar.png")
             statusWin.addstr(1,1, 'Saved webcam and opencv images to prefix '+prefix)
         elif keyp == 'e':
 
@@ -226,8 +238,6 @@ try:
             statusWin.clear()
             statusWin.addstr( 1, 1,  str(object.meanColor()))
 
-            num_corners = len(corners)
-            statusWin.addstr(2,1, "Corners Found:" + str(num_corners))
 
             corners.draw()
 
@@ -244,9 +254,15 @@ try:
                     circles = blobs.filter([b.isCircle(0.2) for b in blobs])
                     if circles:
                         img.drawCircle((circles[-1].x, circles[-1].y), circles[-1].radius(),Color.BLUE,3)
+            
+            
+            blobs.draw(color=Color.RED, width=2)
 
 
-
+            num_corners = len(corners)
+            num_blobs = len(blobs)
+            statusWin.addstr(2,1, "Corners Found:" + str(num_corners))
+            statusWin.addstr(3,1, "Blobs Found:" + str(num_blobs))
 
             img.save("/dev/shm/p4.png")
 
@@ -257,6 +273,12 @@ try:
              pz.stop()
              pts = []
              row=2
+
+             # create image
+            
+             sonarImg=Image.new('RGB',(1024,1024))
+             #irImg=Image.new('RGB',(1024,1024))
+              
 
              scanWin.addstr(1,1,"Distance Map"          )
              scanWin.addstr(2,1, "Sonar                    : ir")
@@ -284,8 +306,11 @@ try:
                   # rescale reading to ascii value
 
                   irLine = irLine + asciiSensor( 400, 400-min(400,ir) ) 
+                  #irImg.putpixel( ( stilt, span), pixelSensor( 400, 400-min(400,ir) ) ) 
+                  sonarImg.putpixel( ( stilt+200, span), (pixelSensor( 400, 400-min(400,ir) ),0,0) ) 
 
                   sonLine = sonLine + asciiSensor(80, distance )
+                  sonarImg.putpixel( (stilt, span), (pixelSensor(80, distance ),0,0))
 
                row=row+1
                scanWin.addstr(row,1, sonLine+ " | "+ str(irLine))
@@ -293,6 +318,8 @@ try:
 
              pz.setOutput (pan, panVal)
              pz.setOutput (tilt, tiltVal)
+             #irImg.save('/dev/shm/ir.png')
+             sonarImg.save('/dev/shm/sonar.png')
         elif keyp == '8' or keyp == 'i' or ord(keyp) == 17:
             panVal = fwdPan
             tiltVal = fwdTilt
