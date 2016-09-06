@@ -99,3 +99,11 @@ Installation
   806  update-rc.d motion enable
   807  sudo update-rc.d motion enable
   824  sudo update-rc.d motion enable 235
+
+
+* Todo
+
+1. Avoidance testing
+2. Increase framerate of motion and add convert images via opencv outside the main program
+3. Move ir sensor to direct gpio and so free up piconzero for the additional second set of wheel counters
+4. Add photos of bot with close ups
