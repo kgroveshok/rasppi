@@ -33,7 +33,7 @@ import tty
 import termios
 import hcsr04
 import select
-from PIL import Image
+import PIL
 import curses
 from shutil import copyfile
 import random
@@ -276,7 +276,7 @@ try:
 
              # create image
             
-             sonarImg=Image.new('RGB',(1024,1024),(255,255,255))
+             sonarImg=PIL.Image.new('RGB',(512,150),(255,255,255))
              #irImg=Image.new('RGB',(1024,1024))
               
 
