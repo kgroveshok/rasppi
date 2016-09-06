@@ -28,6 +28,7 @@ import piconzero as pz, time
 import subprocess
 from SimpleCV import Color, Image
 import time
+import cv2
 import sys
 import tty
 import termios
@@ -265,6 +266,55 @@ try:
             statusWin.addstr(3,1, "Blobs Found:" + str(num_blobs))
 
             img.save("/dev/shm/p4.png")
+            img.save("/dev/shm/p4b.jpg")
+
+            img2 = cv2.imread('/dev/shm/lastsnap.jpg')
+            grey = cv2.imread('/dev/shm/lastsnap.jpg',0)
+
+            # detection against a greyscale image. 
+            # change thresholds against different backgrounds
+            ret, thresh = cv2.threshold( grey,80,80, 1)
+            contours, h = cv2.findContours( thresh, 1,2 )
+
+            # http://stackoverflow.com/questions/11424002/how-to-detect-simple-geometric-shapes-using-opencv
+
+            cpent=0
+            ctri=0
+            csqr=0
+            chc=0
+            ccir=0
+            for cnt in contours:
+                approx = cv2.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
+                #print len(approx)
+                statusWin.addstr(3,20, "Contours Found:" + str(len(approx)))
+                if len(approx)==5:
+                    #print "pentagon"
+                    cpent=cpent+1
+                    cv2.drawContours(img2,[cnt],0,255,-1)
+                elif len(approx)==3:
+                    #print "triangle"
+                    ctri=ctri+1
+                    cv2.drawContours(img2,[cnt],0,Color.RED,-1)
+                elif len(approx)==4:
+                    #print "square"
+                    csqr=csqr+1
+                    cv2.drawContours(img2,[cnt],0,Color.BLUE,-1)
+                elif len(approx) == 9:
+                    #print "half-circle"
+                    chc=chc+1
+                    cv2.drawContours(img2,[cnt],0,Color.GREEN,-1)
+                elif len(approx) > 15:
+                    #print "circle"
+                    ccir=ccir+1
+                    cv2.drawContours(img2,[cnt],0,Color.PUCE,-1)
+
+                statusWin.addstr(3,40, "pent=" + str(cpent)+" tri="+str(ctri)+" sqr="+str(csqr)+" hc="+str(chc)+" cir="+str(ccir))
+
+
+            cv2.imwrite("/dev/shm/p5.jpg",img2)
+
+
+
 
             #img.save(js.framebuffer)
 
