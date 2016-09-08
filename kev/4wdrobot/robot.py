@@ -227,6 +227,7 @@ try:
 
             object = img.hueDistance(Color.BLUE)
             object.save("/dev/shm/p3.png")
+            #object.save("/dev/shm/p3.jpg") # for shape denoise handling
 
             #blobs = blue_distance.findBlobs()
 
@@ -269,10 +270,15 @@ try:
             img.save("/dev/shm/p4b.jpg")
 
             img2 = cv2.imread('/dev/shm/lastsnap.jpg')
+            #grey = cv2.imread('/dev/shm/p3.jpg',0)
             grey = cv2.imread('/dev/shm/lastsnap.jpg',0)
+
+            #worked are removing noise but took wayyyyyy too long
+            #denos=cv2.fastNlMeansDenoising(grey, None, 10)
 
             # detection against a greyscale image. 
             # change thresholds against different backgrounds
+            #ret, thresh = cv2.threshold( denos,80,80, 1)
             ret, thresh = cv2.threshold( grey,80,80, 1)
             contours, h = cv2.findContours( thresh, 1,2 )
 
@@ -290,7 +296,7 @@ try:
                 if len(approx)==5:
                     #print "pentagon"
                     cpent=cpent+1
-                    cv2.drawContours(img2,[cnt],0,255,-1)
+                    #cv2.drawContours(img2,[cnt],0,255,-1)
                 elif len(approx)==3:
                     #print "triangle"
                     ctri=ctri+1
@@ -306,11 +312,12 @@ try:
                 elif len(approx) > 15:
                     #print "circle"
                     ccir=ccir+1
-                    cv2.drawContours(img2,[cnt],0,Color.PUCE,-1)
+                    #cv2.drawContours(img2,[cnt],0,Color.PUCE,-1)
 
-                statusWin.addstr(3,40, "pent=" + str(cpent)+" tri="+str(ctri)+" sqr="+str(csqr)+" hc="+str(chc)+" cir="+str(ccir))
+                statusWin.addstr(3,40, "pent=" + str(cpent)+" R.tri="+str(ctri)+" B.sqr="+str(csqr)+" G.hc="+str(chc)+" cir="+str(ccir))
 
 
+            #cv2.imwrite("/dev/shm/pdenos.jpg",denos)
             cv2.imwrite("/dev/shm/p5.jpg",img2)
 
 
