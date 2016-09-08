@@ -25,7 +25,7 @@ Software:
 *  lighttpd for access to motion/opencv image processing
 
 Installation
-
+apt-get install python-zbar
     1  apt-get install ssh
     2  sudo apt-get install ssh
     3  sudo apt-get install openssh-server
