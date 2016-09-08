@@ -35,6 +35,7 @@ import termios
 import hcsr04
 import select
 import PIL
+import zbar
 import curses
 from shutil import copyfile
 import random
@@ -227,7 +228,7 @@ try:
 
             object = img.hueDistance(Color.BLUE)
             object.save("/dev/shm/p3.png")
-            #object.save("/dev/shm/p3.jpg") # for shape denoise handling
+            object.save("/dev/shm/p3.jpg") # for shape denoise handling
 
             #blobs = blue_distance.findBlobs()
 
@@ -270,8 +271,8 @@ try:
             img.save("/dev/shm/p4b.jpg")
 
             img2 = cv2.imread('/dev/shm/lastsnap.jpg')
-            #grey = cv2.imread('/dev/shm/p3.jpg',0)
-            grey = cv2.imread('/dev/shm/lastsnap.jpg',0)
+            grey = cv2.imread('/dev/shm/p3.jpg',0)
+            #grey = cv2.imread('/dev/shm/lastsnap.jpg',0)
 
             #worked are removing noise but took wayyyyyy too long
             #denos=cv2.fastNlMeansDenoising(grey, None, 10)
@@ -279,7 +280,7 @@ try:
             # detection against a greyscale image. 
             # change thresholds against different backgrounds
             #ret, thresh = cv2.threshold( denos,80,80, 1)
-            ret, thresh = cv2.threshold( grey,80,80, 1)
+            ret, thresh = cv2.threshold( grey,80,80,1)
             contours, h = cv2.findContours( thresh, 1,2 )
 
             # http://stackoverflow.com/questions/11424002/how-to-detect-simple-geometric-shapes-using-opencv
@@ -318,9 +319,27 @@ try:
 
 
             #cv2.imwrite("/dev/shm/pdenos.jpg",denos)
+            cv2.imwrite("/dev/shm/pdenos.jpg",grey)
             cv2.imwrite("/dev/shm/p5.jpg",img2)
 
 
+            # using the greyscale version from the shape detector detect bar codes
+
+            scanner = zbar.ImageScanner()
+            scanner.parse_config('enable')
+            pil = PIL.Image.fromarray(grey)
+            width, height = pil.size
+            raw = pil.tostring()
+
+            image = zbar.Image(width, height, 'Y800', raw)
+            scanner.scan(image)
+
+            fstr=''
+            for symbol in image:
+               fstr = fstr + ' decoded' + symbol.type + ' symbol '+ symbol.data
+
+            statusWin.addstr(4,1, "barcode "+fstr)
+               
 
 
             #img.save(js.framebuffer)
