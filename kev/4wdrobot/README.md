@@ -107,3 +107,4 @@ apt-get install python-zbar
 2. Increase framerate of motion and add convert images via opencv outside the main program
 3. Move ir sensor to direct gpio and so free up piconzero for the additional second set of wheel counters
 4. Add photos of bot with close ups
+5. Include use of Kinetic to improve the depth and shape detection
