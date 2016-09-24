@@ -434,9 +434,9 @@ try:
             # get a sample for safe value
 
             fwdSafe=0
-            for c in range(0,20):
-                fwdSafe = max(fwdSafe, int(hcsr04.getDistance()))
-                time.sleep(0.1)
+            #for c in range(0,20):
+            #    fwdSafe = max(fwdSafe, int(hcsr04.getDistance()))
+            #    time.sleep(0.1)
             pz.reverse(speed)
             #statusWin.clear()
             statusWin.addstr(1,1,'Forward '+ str(speed)+"     ")
@@ -534,10 +534,13 @@ try:
         leftState=leftRev
         rightState=rightRev
 
+        volts=min(0.1,ir*0.0029296875 )  #min(1,ir*0.006);  # // value from sensor * (5/1024) - if running 3.3.volts then change 5 to 3.3
+
+        actdist= (65*pow(volts, -1.10));  #        // worked out from graph 65 = theretical distance / (1/Volts)S - luckylarry.co.uk
         #sensorWin.clear()
         sensorWin.addstr(1,1, "Sonar Distance: "+ str(distance)+"    ")
         sensorWin.addstr(1,30, " Safe: "+ str(fwdSafe)+"        " )
-        sensorWin.addstr(1,40, " iR Distance: "+ str(ir)+"        " )
+        sensorWin.addstr(1,40, " iR Distance: "+ str(ir)+"   Actual: "+str(actdist)+"    " )
         sensorWin.addstr(2,1, "Left Counter: "+ str(leftTotal)+"        " )
         sensorWin.addstr(2,30, "Right Counter: "+ str(rightTotal)+"        " )
 
