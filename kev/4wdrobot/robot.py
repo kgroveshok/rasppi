@@ -50,6 +50,25 @@ stdscr.keypad(1)
 hcsr04.init()
 
 
+def readSensors:
+            ir = pz.readInput(irSen)
+            distance = int(hcsr04.getDistance())
+
+        leftRev=pz.readInput(leftCounter)
+        if leftRev <> leftState:
+             leftTotal = leftTotal + 1
+
+        rightRev=pz.readInput(rightCounter)
+
+        if rightRev <> rightState:
+             rightTotal = rightTotal + 1
+
+        leftState=leftRev
+        rightState=rightRev
+
+        volts=min(0.1,ir*0.0029296875 )  #min(1,ir*0.006);  # // value from sensor * (5/1024) - if running 3.3.volts then change 5 to 3.3
+
+        actdist= (65*pow(volts, -1.10));  #        // worked out from graph 65 = theretical distance / (1/Volts)S - luckylarry.co.uk
 
 def asciiSensor( maxVal, reading ):
     # convert a sensor reading into an ASCII form for easy render on terminal
@@ -366,14 +385,15 @@ try:
                   pz.setOutput (pan, span)
                   pz.setOutput (tilt, stilt)
                   time.sleep( 0.1)
-                  ir = pz.readInput(irSen)
-                  distance = int(hcsr04.getDistance())
+		  readSensors()
+                  #ir = pz.readInput(irSen)
+                  #distance = int(hcsr04.getDistance())
                   #print "At pan,tilt: ",span,",",stilt,": ir Distance:", ir, " sonic distance: ", distance
 
                   #volts=min(1,ir*0.0048828125);  # // value from sensor * (5/1024) - if running 3.3.volts then change 5 to 3.3
-                  volts=min(1,ir*0.002929688);  # // value from sensor * (5/1024) - if running 3.3.volts then change 5 to 3.3
+                  #volts=min(1,ir*0.002929688);  # // value from sensor * (5/1024) - if running 3.3.volts then change 5 to 3.3
 
-                  actdist=65*pow(volts, -1.10);  #        // worked out from graph 65 = theretical distance / (1/Volts)S - luckylarry.co.uk
+                  #actdist=65*pow(volts, -1.10);  #        // worked out from graph 65 = theretical distance / (1/Volts)S - luckylarry.co.uk
 
                   #print "ir act distance: ",actdist
 
@@ -514,29 +534,30 @@ try:
 
         statusWin.refresh()
 
+	readSensors()
         if sensorLast < time.time(): 
-            ir = pz.readInput(irSen)
-            distance = int(hcsr04.getDistance())
+        #    ir = pz.readInput(irSen)
+        #    distance = int(hcsr04.getDistance())
             t=int(time.time())
             sensorLast=t+1
 
         
 
-        leftRev=pz.readInput(leftCounter)
-        if leftRev <> leftState:
-             leftTotal = leftTotal + 1
+        #leftRev=pz.readInput(leftCounter)
+        #if leftRev <> leftState:
+        #     leftTotal = leftTotal + 1
 
-        rightRev=pz.readInput(rightCounter)
+        #rightRev=pz.readInput(rightCounter)
 
-        if rightRev <> rightState:
-             rightTotal = rightTotal + 1
+        #if rightRev <> rightState:
+        #     rightTotal = rightTotal + 1
 
-        leftState=leftRev
-        rightState=rightRev
+        #leftState=leftRev
+        #rightState=rightRev
 
-        volts=min(0.1,ir*0.0029296875 )  #min(1,ir*0.006);  # // value from sensor * (5/1024) - if running 3.3.volts then change 5 to 3.3
+        #volts=min(0.1,ir*0.0029296875 )  #min(1,ir*0.006);  # // value from sensor * (5/1024) - if running 3.3.volts then change 5 to 3.3
 
-        actdist= (65*pow(volts, -1.10));  #        // worked out from graph 65 = theretical distance / (1/Volts)S - luckylarry.co.uk
+        #actdist= (65*pow(volts, -1.10));  #        // worked out from graph 65 = theretical distance / (1/Volts)S - luckylarry.co.uk
         #sensorWin.clear()
         sensorWin.addstr(1,1, "Sonar Distance: "+ str(distance)+"    ")
         sensorWin.addstr(1,30, " Safe: "+ str(fwdSafe)+"        " )
