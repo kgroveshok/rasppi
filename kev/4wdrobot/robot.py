@@ -371,14 +371,15 @@ try:
 
              # create image
             
-             sonarImg=PIL.Image.new('RGB',(512,150),(255,255,255))
+             #sonarImg=PIL.Image.new('RGB',(512,150),(255,255,255))
+             sonarImg=PIL.Image.new('RGB',(250,150),(255,255,255))
              #irImg=Image.new('RGB',(1024,1024))
               
 
              scanWin.addstr(1,1,"Distance Map"          )
-             scanWin.addstr(2,1, "Sonar                    : ir")
+             scanWin.addstr(2,1, "Sonar")
              for span in range( 39, 75, 3 ):
-               irLine=""
+               #irLine=""
                sonLine=""
 
                for stilt in range( 150, 30, -3 ):
@@ -401,22 +402,22 @@ try:
 
                   # rescale reading to ascii value
 
-                  irLine = irLine + asciiSensor( 400, 400-min(400,ir) ) 
+                  #irLine = irLine + asciiSensor( 400, 400-min(400,ir) ) 
                   #irImg.putpixel( ( stilt, span), pixelSensor( 400, 400-min(400,ir) ) ) 
-                  px=pixelSensor( 400, 400-min(400,ir) )
-                  px2=(px,px,0)
-                  sonarImg.putpixel( ( stilt+200, span), px2) 
-                  sonarImg.putpixel( ( stilt+200, span+1), px2) 
-                  sonarImg.putpixel( ( stilt+200, span+2), px2) 
+                  #px=pixelSensor( 400, 400-min(400,ir) )
+                  #px2=(px,px,0)
+                  #sonarImg.putpixel( ( stilt+200, span), px2) 
+                  #sonarImg.putpixel( ( stilt+200, span+1), px2) 
+                  #sonarImg.putpixel( ( stilt+200, span+2), px2) 
 
 
-                  sonarImg.putpixel( ( stilt+201, span), px2) 
-                  sonarImg.putpixel( ( stilt+201, span+1), px2) 
-                  sonarImg.putpixel( ( stilt+201, span+2), px2) 
+                  #sonarImg.putpixel( ( stilt+201, span), px2) 
+                  #sonarImg.putpixel( ( stilt+201, span+1), px2) 
+                  #sonarImg.putpixel( ( stilt+201, span+2), px2) 
 
-                  sonarImg.putpixel( ( stilt+202, span), px2) 
-                  sonarImg.putpixel( ( stilt+202, span+1), px2) 
-                  sonarImg.putpixel( ( stilt+202, span+2), px2) 
+                  # sonarImg.putpixel( ( stilt+202, span), px2) 
+                  #sonarImg.putpixel( ( stilt+202, span+1), px2) 
+                  #sonarImg.putpixel( ( stilt+202, span+2), px2) 
                   #sonarImg.putpixel( ( stilt+200, span), (pixelSensor( 400, 400-min(400,ir) ),0,0) ) 
 
                   sonLine = sonLine + asciiSensor(80, distance )
@@ -437,7 +438,8 @@ try:
                   sonarImg.putpixel( (stilt+2, span+2), px2)
 
                row=row+1
-               scanWin.addstr(row,1, sonLine+ " | "+ str(irLine))
+               #scanWin.addstr(row,1, sonLine+ " | "+ str(irLine))
+               scanWin.addstr(row,1, sonLine)
                scanWin.refresh()
 
              pz.setOutput (pan, panVal)
