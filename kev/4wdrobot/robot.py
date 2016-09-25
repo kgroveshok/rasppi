@@ -238,6 +238,8 @@ try:
             copyfile("/dev/shm/p3.png","/home/pi/"+prefix+"_p3.png")
             copyfile("/dev/shm/p4.png","/home/pi/"+prefix+"_p4.png")
             copyfile("/dev/shm/sonar.png","/home/pi/"+prefix+"_sonar.png")
+            copyfile("/dev/shm/pdenos.jpg","/home/pi/"+prefix+"_pdenos.jpg")
+            copyfile("/dev/shm/p5.jpg","/home/pi/"+prefix+"_p5.jpg")
             statusWin.addstr(1,1, 'Saved webcam and opencv images to prefix '+prefix)
         elif keyp == 'e':
 
