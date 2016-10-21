@@ -108,3 +108,6 @@ apt-get install python-zbar
 3. Move ir sensor to direct gpio and so free up piconzero for the additional second set of wheel counters
 4. Add photos of bot with close ups
 5. Include use of Kinetic to improve the depth and shape detection
+	(No as it requires a 12v supply. Not handy in this robot)
+6. Change of IR to front so now need auto stop if too close. Do an ultrasonic scan and test if obstruction is moving or stationary
+7. If stationary then need to move around it. If its moving then wait it out.
