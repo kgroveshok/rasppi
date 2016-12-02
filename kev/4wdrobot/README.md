@@ -111,3 +111,5 @@ apt-get install python-zbar
 	(No as it requires a 12v supply. Not handy in this robot)
 6. Change of IR to front so now need auto stop if too close. Do an ultrasonic scan and test if obstruction is moving or stationary
 7. If stationary then need to move around it. If its moving then wait it out.
+8. Include voice recgnition via alexa https://github.com/alexa/alexa-avs-sample-app/wiki/Raspberry-Pi
+9. http://lifehacker.com/how-to-build-your-own-amazon-echo-with-a-raspberry-pi-1787726931
