@@ -1,5 +1,4 @@
 #!/usr/bin/python
-#!/usr/bin/python
 # Based on Picon Zero Motor Test
 #
 # robot hardware:
@@ -175,7 +174,9 @@ rightCounter=0
 leftCounter=1
 irSen=3
 
-
+# TODO add line following
+#leftLine
+#rightLine
 
 # current sensor state
 leftState=0
@@ -220,7 +221,7 @@ ir=0
 
 helpWin.addstr(1,1, "Tests the motors by using the arrow keys to control. num keys. 5 to stop. IJLM. K=stop")
 helpWin.addstr(2, 1, "Use , or < to slow down. Use . or > to speed up. V to distance scan")
-helpWin.addstr(3,1, "Move cam. F and G. Neck. WADZ. S = centre. opencv scan=E. R=save webcam")
+helpWin.addstr(3,1, "WADZ. S = centre. opencv scan=E. R=save webcam")
 helpWin.refresh()
 
 # main loop
