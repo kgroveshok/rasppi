@@ -27,20 +27,14 @@
 import piconzero as pz, time
 
 import subprocess
-from SimpleCV import Color, Image
 import time
-import cv2
 import sys
 import tty
 import termios
 import hcsr04
 import select
-import PIL
-import zbar
 import curses
-from shutil import copyfile
 import random
-from bisect import bisect
 
 
 stdscr = curses.initscr()
@@ -129,18 +123,18 @@ try:
         if keyp == '2' or keyp == 'm' or ord(keyp) == 16:
             #statusWin.clear()
             statusWin.addstr(1,1, 'Reverse '+ str(speed)+"    ")
-            pz.SetOutput(leftWheel,speed);
-            pz.SetOutput(rightWheel,speed);
+            pz.setOutput(leftWheel,speed);
+            pz.setOutput(rightWheel,speed);
         elif keyp == '4' or keyp == 'j' or ord(keyp) == 18:
             #statusWin.clear()
             statusWin.addstr(1,1, 'Spin Right '+ str(speed)+"    ")
-            pz.SetOutput(leftWheel,speed);
-            pz.SetOutput(rightWheel,-speed);
+            pz.setOutput(leftWheel,speed);
+            pz.setOutput(rightWheel,-speed);
         elif keyp == '6' or keyp == 'l' or ord(keyp) == 19:
             #statusWin.clear()
             statusWin.addstr(1,1, 'Spin Left '+ str(speed)+"     ")
-            pz.SetOutput(leftWheel,-speed);
-            pz.SetOutput(rightWheel,speed);
+            pz.setOutput(leftWheel,-speed);
+            pz.setOutput(rightWheel,speed);
         elif keyp == '.' or keyp == '>':
             speed = min(100, speed+10)
             #statusWin.clear()
@@ -154,13 +148,14 @@ try:
                 curses.endwin()
                 abort()
         elif keyp == '5' or keyp == 'k':
-            pz.SetOutput(leftWheel,0);
-            pz.SetOutput(rightWheel,0);
+            pz.setOutput(leftWheel,0);
+            pz.setOutput(rightWheel,0);
             statusWin.addstr(1,1,'Stop')
         elif ord(keyp) == 3:
             break
 
 
+        statusWin.refresh()
       
 except KeyboardInterrupt:
     print
