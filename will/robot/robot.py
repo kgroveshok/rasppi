@@ -89,7 +89,8 @@ scanWin.border()
 
 # define motor speeds
 
-speed = 10
+speed = 80
+turnSpeed=100
 
 # Define which pins are the servos and sensors
 
@@ -99,18 +100,14 @@ rightWheel = 1
 
 # init all hardware
 
-pz.init()
 
-# Set output mode to Servo
-pz.setOutputConfig(leftWheel, 2)
-pz.setOutputConfig(rightWheel, 2)
+pz.init()
 
 
 
 
 helpWin.addstr(1,1, "Tests the motors by using the arrow keys to control. num keys. 5 to stop. IJLM. K=stop")
 helpWin.addstr(2, 1, "Use , or < to slow down. Use . or > to speed up. V to distance scan")
-helpWin.addstr(3,1, "Move cam. F and G. Neck. WADZ. S = centre. opencv scan=E. R=save webcam")
 helpWin.refresh()
 
 # main loop
@@ -121,20 +118,28 @@ try:
         #keyp = readchar()
         keyp = GetChar(False)
         if keyp == '2' or keyp == 'm' or ord(keyp) == 16:
-            #statusWin.clear()
+            pz.forward(speed)
             statusWin.addstr(1,1, 'Reverse '+ str(speed)+"    ")
-            pz.setOutput(leftWheel,speed);
-            pz.setOutput(rightWheel,speed);
+        elif keyp == '8' or keyp == 'j' or ord(keyp) == 18:
+            pz.stop()
+            # get a sample for safe value
+
+            #for c in range(0,20):
+            #    fwdSafe = max(fwdSafe, int(hcsr04.getDistance()))
+            #    time.sleep(0.1)
+            pz.reverse(speed)
+            #statusWin.clear()
+            statusWin.addstr(1,1,'Forward '+ str(speed)+"     ")
+
+ 
         elif keyp == '4' or keyp == 'j' or ord(keyp) == 18:
+            pz.spinRight(turnSpeed)
             #statusWin.clear()
             statusWin.addstr(1,1, 'Spin Right '+ str(speed)+"    ")
-            pz.setOutput(leftWheel,speed);
-            pz.setOutput(rightWheel,-speed);
         elif keyp == '6' or keyp == 'l' or ord(keyp) == 19:
+            pz.spinLeft(turnSpeed)
             #statusWin.clear()
             statusWin.addstr(1,1, 'Spin Left '+ str(speed)+"     ")
-            pz.setOutput(leftWheel,-speed);
-            pz.setOutput(rightWheel,speed);
         elif keyp == '.' or keyp == '>':
             speed = min(100, speed+10)
             #statusWin.clear()
@@ -148,12 +153,7 @@ try:
                 curses.endwin()
                 abort()
         elif keyp == '5' or keyp == 'k':
-            pz.setOutput(leftWheel,0);
-            pz.setOutput(rightWheel,0);
-            statusWin.addstr(1,1,'Stop')
-        elif ord(keyp) == 3:
-            break
-
+            pz.stop()
 
         statusWin.refresh()
       
