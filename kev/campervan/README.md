@@ -9,4 +9,4 @@ media streaming
 mobile weather station
 environmental controls
 (alarm) clock
-
+Wifi point auto syncs with local when in range
