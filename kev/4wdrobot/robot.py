@@ -144,15 +144,37 @@ def readkey(getchar_fn=None):
 def GetChar(Block=True):
 
 
-  for event in pygame.event.get(): # User did something.
-        if event.type == pygame.QUIT: # If user clicked close.
-            done = True # Flag that we are done so we exit this loop.
-        elif event.type == pygame.JOYBUTTONDOWN:
-            print("Joystick button pressed.")
-        elif event.type == pygame.JOYBUTTONUP:
-            print("Joystick button released.")
+  joystick_count = pygame.joystick.get_count()
+  helpWin.addstr(1,1,str(joystick_count))
+  helpWin.refresh() 
+  for i in range(joystick_count):
+        joystick = pygame.joystick.Joystick(i)
+        joystick.init()
 
-
+        buttons = joystick.get_numbuttons()
+        helpWin.addstr(1,5,str(buttons))
+        r=1
+        for b in range(buttons):
+            button = joystick.get_button(b)
+            try:
+                if button:
+                    helpWin.addstr(2,r,  "1"  )
+                else:
+                    helpWin.addstr(2,r,   "0" )
+            except:
+               pass
+            r=r+1
+            helpWin.refresh() 
+            if button and b == 7 :
+                return '4'
+            if button and b == 5 :
+                return '6'
+            if button and b == 4 :
+                return '8'
+            if button and b == 6:
+                return '2'
+            if button and b == 14:
+                return '5'
   
 
 
@@ -205,7 +227,6 @@ rightTotal=0
 
 pz.init()
 pygame.joystick.init()
-joysticks = [pygame.joystick.Joystick(x) for x in range(pygame.joystick.get_count())]
 
 
 # Set output mode to Servo
