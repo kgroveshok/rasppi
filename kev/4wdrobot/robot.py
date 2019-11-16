@@ -28,6 +28,7 @@ import piconzero as pz, time
 import subprocess
 from SimpleCV import Color, Image
 import time
+import pygame
 import cv2
 import sys
 import tty
@@ -141,6 +142,20 @@ def readkey(getchar_fn=None):
     return chr(0x10 + ord(c3) - 65)  # 16=Up, 17=Down, 18=Right, 19=Left arrows
 
 def GetChar(Block=True):
+
+
+  for event in pygame.event.get(): # User did something.
+        if event.type == pygame.QUIT: # If user clicked close.
+            done = True # Flag that we are done so we exit this loop.
+        elif event.type == pygame.JOYBUTTONDOWN:
+            print("Joystick button pressed.")
+        elif event.type == pygame.JOYBUTTONUP:
+            print("Joystick button released.")
+
+
+  
+
+
   if Block or select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], []):
     return sys.stdin.read(1)
   return '0'
@@ -189,6 +204,9 @@ rightTotal=0
 # init all hardware
 
 pz.init()
+pygame.joystick.init()
+joysticks = [pygame.joystick.Joystick(x) for x in range(pygame.joystick.get_count())]
+
 
 # Set output mode to Servo
 pz.setOutputConfig(pan, 2)
