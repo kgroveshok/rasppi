@@ -28,7 +28,7 @@ import piconzero as pz, time
 import subprocess
 from SimpleCV import Color, Image
 import time
-import pygame
+import struct
 import cv2
 import sys
 import tty
@@ -144,37 +144,28 @@ def readkey(getchar_fn=None):
 def GetChar(Block=True):
 
 
-  joystick_count = pygame.joystick.get_count()
-  helpWin.addstr(1,1,str(joystick_count))
-  helpWin.refresh() 
-  for i in range(joystick_count):
-        joystick = pygame.joystick.Joystick(i)
-        joystick.init()
+  with open("/dev/input/js0", "rb") as f:
+        a = f.read(8)
+        t, value, code, index = struct.unpack("<Ihbb", a) # 4 bytes, 2 bytes, 1 byte, 1 byte
+        # t: time in ms
+        # index: button/axis number (0 for x-axis)
+        # code: 1 for buttons, 2 for axis
+        # value: axis position, 0 for center, 1 for buttonpress, 0 for button release
+        helpWin.addstr(2,1,"t: {:10d} ms, value: {:6d}, code: {:1d}, index: {:1d}".format(t, value, code, index))
+        #helpWin.addstr(2,1,str(index))
 
-        buttons = joystick.get_numbuttons()
-        helpWin.addstr(1,5,str(buttons))
-        r=1
-        for b in range(buttons):
-            button = joystick.get_button(b)
-            try:
-                if button:
-                    helpWin.addstr(2,r,  "1"  )
-                else:
-                    helpWin.addstr(2,r,   "0" )
-            except:
-               pass
-            r=r+1
-            helpWin.refresh() 
-            if button and b == 7 :
-                return '4'
-            if button and b == 5 :
-                return '6'
-            if button and b == 4 :
-                return '8'
-            if button and b == 6:
-                return '2'
-            if button and b == 14:
-                return '5'
+        helpWin.refresh()
+
+       # if index[7] :
+       #         return '4'
+       # if index[5] :
+       #         return '6'
+       # if index[4] :
+       #         return '8'
+       # if index[6]:
+       #         return '2'
+       # if index[14]:
+       #         return '5'
   
 
 
@@ -226,7 +217,6 @@ rightTotal=0
 # init all hardware
 
 pz.init()
-pygame.joystick.init()
 
 
 # Set output mode to Servo
