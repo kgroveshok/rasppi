@@ -144,27 +144,28 @@ def readkey(getchar_fn=None):
 def GetChar(Block=True):
 
 
-    event=gamepad.read_loop()
-    #print(categorize(event))
-    if event.type != ecodes.EV_SYN:
+    ev=gamepad.read_loop()
+    for event in ev:
+        #print(categorize(event))
+        if event.type != ecodes.EV_SYN:
 
-        statusWin.addstr(2,1, "here1")
-        if event.type in ecodes.bytype:
-            statusWin.addstr(2,1, "here2")
-            codename = ecodes.bytype[event.type][event.code]
+            statusWin.addstr(2,1, "here1")
+            if event.type in ecodes.bytype:
+                statusWin.addstr(2,1, "here2")
+                codename = ecodes.bytype[event.type][event.code]
 
-            if codename == "BTN_BASE3":
-                return '5'
+                if codename == "BTN_BASE3":
+                    return '5'
 
-            if codename == "BTN_TOP2":
-                return '8'
+                if codename == "BTN_TOP2":
+                    return '8'
 
-            if codename == "BTN_BASE":
-                return '2'
-            if codename == "BTN_BASE2":
-                return '4'
-            if codename == "BTN_PINKIE":
-                return '6'
+                if codename == "BTN_BASE":
+                    return '2'
+                if codename == "BTN_BASE2":
+                    return '4'
+                if codename == "BTN_PINKIE":
+                    return '6'
 #  with open("/dev/input/js0", "rb") as f:
 #        a = f.read(8)
 #        t, value, code, index = struct.unpack("<Ihbb", a) # 4 bytes, 2 bytes, 1 byte, 1 byte
