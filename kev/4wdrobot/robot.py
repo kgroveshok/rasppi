@@ -152,6 +152,10 @@ def GetChar(Block=True):
                 if event.type in ecodes.bytype:
                     codename = ecodes.bytype[event.type][event.code]
 
+#ABS_Y left y
+# ABS_X left x
+
+
                     if codename == "BTN_BASE3":
                         return '5'
 
