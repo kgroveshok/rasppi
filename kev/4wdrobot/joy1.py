@@ -22,7 +22,7 @@
 #!/usr/bin/python
 import pyglet
 
-window = pyglet.window.Window(width=400, height=400)
+#window = pyglet.window.Window(width=400, height=400)
 
 # open first joystick
 joysticks = pyglet.input.get_joysticks()  # requires pyglet 1.2
@@ -33,14 +33,14 @@ else:
 	exit()
 joystick.open()
 
-@window.event
-def on_draw():
-	window.clear()
+#@window.event
+#def on_draw():
+#	window.clear()
 
-@window.event
-def on_key_press(symbol, modifiers):
-	print("keypress")
-	print("query based joystick position: {}".format(joystick.x))
+#@window.event
+#def on_key_press(symbol, modifiers):
+#	print("keypress")
+#	print("query based joystick position: {}".format(joystick.x))
 	
 @joystick.event
 def on_joybutton_press(joystick, button):
