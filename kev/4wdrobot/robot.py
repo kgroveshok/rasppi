@@ -144,7 +144,7 @@ def readkey(getchar_fn=None):
 def GetChar(Block=True):
 
 
-    event=gamepad.read_loop():
+    event=gamepad.read_loop()
     #print(categorize(event))
     if event.type != ecodes.EV_SYN:
 
