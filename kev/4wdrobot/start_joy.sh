@@ -13,5 +13,5 @@ sudo /root/sixpair/sixpair
 
 
 service bluetooth start
-sudo sixad --start
+sudo sixad --start &
 
