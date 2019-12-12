@@ -194,9 +194,9 @@ def GetChar(Block=True):
   
 
 
-  if Block or select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], []):
-    return sys.stdin.read(1)
-  return '0'
+    if Block or select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], []):
+        return sys.stdin.read(1)
+    return '0'
 
 # window setup
 
