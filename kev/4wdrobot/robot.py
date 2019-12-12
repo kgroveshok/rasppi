@@ -147,7 +147,10 @@ def GetChar(Block=True):
     event=gamepad.read_loop():
     #print(categorize(event))
     if event.type != ecodes.EV_SYN:
+
+        statusWin.addstr(2,1, "here1")
         if event.type in ecodes.bytype:
+            statusWin.addstr(2,1, "here2")
             codename = ecodes.bytype[event.type][event.code]
 
             if codename == "BTN_BASE3":
