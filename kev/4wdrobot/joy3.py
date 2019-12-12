@@ -34,6 +34,7 @@ print(gamepad)
 
 #loop and filter by event code and print the mapped label
 for event in gamepad.read_loop():
+    print(categorize(event))
     if event.type == ecodes.EV_KEY:
         if event.value == 1:
             if event.code == yBtn:
