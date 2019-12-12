@@ -113,3 +113,8 @@ apt-get install python-zbar
 7. If stationary then need to move around it. If its moving then wait it out.
 8. Include voice recgnition via alexa https://github.com/alexa/alexa-avs-sample-app/wiki/Raspberry-Pi
 9. http://lifehacker.com/how-to-build-your-own-amazon-echo-with-a-raspberry-pi-1787726931
+
+
+
+
+
