@@ -41,7 +41,7 @@ import curses
 from shutil import copyfile
 import random
 from bisect import bisect
-
+from evdev import InputDevice, categorize, ecodes
 
 stdscr = curses.initscr()
 curses.noecho()
@@ -144,17 +144,21 @@ def readkey(getchar_fn=None):
 def GetChar(Block=True):
 
 
-  with open("/dev/input/js0", "rb") as f:
-        a = f.read(8)
-        t, value, code, index = struct.unpack("<Ihbb", a) # 4 bytes, 2 bytes, 1 byte, 1 byte
-        # t: time in ms
-        # index: button/axis number (0 for x-axis)
-        # code: 1 for buttons, 2 for axis
-        # value: axis position, 0 for center, 1 for buttonpress, 0 for button release
-        helpWin.addstr(2,1,"t: {:10d} ms, value: {:6d}, code: {:1d}, index: {:1d}".format(t, value, code, index))
-        #helpWin.addstr(2,1,str(index))
+#  with open("/dev/input/js0", "rb") as f:
+#        a = f.read(8)
+#        t, value, code, index = struct.unpack("<Ihbb", a) # 4 bytes, 2 bytes, 1 byte, 1 byte
+#        # t: time in ms
+#        # index: button/axis number (0 for x-axis)
+#        # code: 1 for buttons, 2 for axis
+#        # value: axis position, 0 for center, 1 for buttonpress, 0 for button release
+#        helpWin.addstr(2,1,"t: {:10d} ms, value: {:6d}, code: {:1d}, index: {:1d}".format(t, value, code, index))
+#        #helpWin.addstr(2,1,str(index))
+#
+#        helpWin.refresh()
 
-        helpWin.refresh()
+
+
+
 
        # if index[7] :
        #         return '4'
@@ -185,6 +189,7 @@ sensorWin.border()
 statusWin.border()
 scanWin.border()
 
+gamepad = InputDevice('/dev/input/event1')
 
 # define motor speeds
 
