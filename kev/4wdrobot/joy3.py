@@ -32,6 +32,14 @@ rTrig = 50
 #prints out device info at start
 print(gamepad)
 
+
+# stop BTN_BASE3
+# up BTN_TOP2
+# down BTN_BASE
+# left BTN_BASE2
+# right BTN_PINKIE
+
+
 #loop and filter by event code and print the mapped label
 for event in gamepad.read_loop():
     #print(categorize(event))
