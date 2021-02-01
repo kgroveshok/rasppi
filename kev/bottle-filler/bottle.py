@@ -100,7 +100,7 @@ currentStage = stage.Selection
 pumpFlushTime = 20
 pumpProg = [ 0, 0, 0, 0, 0 ]
 
-
+caddyPos = 0
 
 # handle selection button bounce
 
@@ -121,6 +121,7 @@ pz.setOutputConfig( pinLED2, 0 )
 pz.setOutputConfig( pinLED3, 0 )
 pz.setOutputConfig( pinLED4, 0 )
 pz.setOutputConfig( pinLED5, 0 )
+pz.setOutputConfig( pinCaddyDrive, 2 )
 
 
 # TODO set pump pin
@@ -130,7 +131,10 @@ pz.setOutputConfig( pinLED5, 0 )
 
 
 while True:
-        
+       
+
+
+
         setLED()
         ( senseButSelection, senseButStartStop, senseCaddyIn) = readSensors()
 
@@ -211,6 +215,8 @@ while True:
         elif currentStage == stage.LoadCaddy:
             dispLED2 = True
             currentStage = stage.FindingBottleMark
+            pz.setOutput(pinCaddyDrive, 0)
+            caddyPos = 0
             time.sleep(2)
             #TODO
             
@@ -221,6 +227,8 @@ while True:
             dispLED5 = False
             currentStage = stage.BottlePresentScan
             time.sleep(2)
+
+            pz.setOutput(pinCaddyDrive, caddyPos)
 
             if senseCaddyIn :
                 currentStage = stage.Selection
@@ -239,6 +247,7 @@ while True:
             dispLED5 = True
             currentStage = stage.FindingBottleMark
             time.sleep(2)
+            caddyPos = caddyPos + 10
             #TODO 
             pass
             
