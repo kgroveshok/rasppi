@@ -90,6 +90,22 @@ def readSensors():
     #TODO senseBottleMark = 0
     #TODO senseBottlePresent = 0
 
+
+def caddyIn():
+    time.sleep(2)
+    pz.setOutput( pinCaddyDrive, 80 )
+    time.sleep(2)
+    pz.setOutput( pinCaddyDrive, 90 )
+    time.sleep(2)
+    pz.setOutput( pinCaddyDrive, 110 )
+    time.sleep(2)
+    pz.setOutput( pinCaddyDrive, 90 )
+    pass
+
+def caddyNext():
+    pass
+
+
 # init
 
 # selection options
@@ -130,6 +146,12 @@ pz.setOutputConfig( pinCaddyDrive, 2 )
 # main loop
 
 
+
+caddyIn()
+caddyNext()
+
+
+
 while True:
        
 
@@ -151,6 +173,7 @@ while True:
                 pressedStartStop = True
                 # TODO stop pump
                 # TODO stop servo
+                pz.setOutput(pinCaddyDrive, 90)
                 pass
 
         if not senseButStartStop and pressedStartStop :
@@ -215,7 +238,6 @@ while True:
         elif currentStage == stage.LoadCaddy:
             dispLED2 = True
             currentStage = stage.FindingBottleMark
-            pz.setOutput(pinCaddyDrive, 0)
             caddyPos = 0
             time.sleep(2)
             #TODO
@@ -228,7 +250,6 @@ while True:
             currentStage = stage.BottlePresentScan
             time.sleep(2)
 
-            pz.setOutput(pinCaddyDrive, caddyPos)
 
             if senseCaddyIn :
                 currentStage = stage.Selection
@@ -247,7 +268,7 @@ while True:
             dispLED5 = True
             currentStage = stage.FindingBottleMark
             time.sleep(2)
-            caddyPos = caddyPos + 10
+ #          caddyPos = caddyPos + 10
             #TODO 
             pass
             
