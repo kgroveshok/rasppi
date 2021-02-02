@@ -91,16 +91,29 @@ def readSensors():
     #TODO senseBottlePresent = 0
 
 
+caddySpeedStop=90
+caddySpeedIn=60
+caddySpeedOut=150
+
+
 def caddyIn():
-    time.sleep(2)
-    pz.setOutput( pinCaddyDrive, 80 )
-    time.sleep(2)
-    pz.setOutput( pinCaddyDrive, 90 )
-    time.sleep(2)
-    pz.setOutput( pinCaddyDrive, 110 )
-    time.sleep(2)
-    pz.setOutput( pinCaddyDrive, 90 )
-    pass
+
+        print( "Stop")
+        pz.setOutput( pinCaddyDrive, caddySpeedStop )
+        time.sleep(1)
+        print( "In")
+        pz.setOutput( pinCaddyDrive, caddySpeedIn )
+        time.sleep(1)
+        print( "Stop")
+        pz.setOutput( pinCaddyDrive, caddySpeedStop )
+        time.sleep(1)
+        print( "Out")
+        pz.setOutput( pinCaddyDrive, caddySpeedOut )
+        time.sleep(1)
+        print( "Stop")
+        pz.setOutput( pinCaddyDrive, caddySpeedStop )
+        time.sleep(1)
+        pz.setOutput( pinCaddyDrive, caddySpeedStop )
 
 def caddyNext():
     pass
@@ -237,9 +250,22 @@ while True:
 
         elif currentStage == stage.LoadCaddy:
             dispLED2 = True
+            setLED()
             currentStage = stage.FindingBottleMark
             caddyPos = 0
             time.sleep(2)
+            # TODO add sensor check and remove counter
+            move = 5
+            pz.setOutput( pinCaddyDrive, caddySpeedOut )
+            while move > 0 :
+                
+                print( "Put Caddy Out" )
+
+                move = move -1
+                time.sleep(2)
+            pz.setOutput( pinCaddyDrive, caddySpeedStop )
+            time.sleep(1)
+            pz.setOutput( pinCaddyDrive, caddySpeedStop )
             #TODO
             
         elif currentStage == stage.FindingBottleMark:
@@ -249,7 +275,21 @@ while True:
             dispLED5 = False
             currentStage = stage.BottlePresentScan
             time.sleep(2)
+            setLED()
 
+
+            # TODO add sensor check and remove counter
+            move = 5
+            pz.setOutput( pinCaddyDrive, caddySpeedIn )
+            while move > 0 :
+                
+                print( "Finding bottle marker" )
+
+                move = move -1
+                time.sleep(2)
+            pz.setOutput( pinCaddyDrive, caddySpeedStop )
+            time.sleep(1)
+            pz.setOutput( pinCaddyDrive, caddySpeedStop )
 
             if senseCaddyIn :
                 currentStage = stage.Selection
