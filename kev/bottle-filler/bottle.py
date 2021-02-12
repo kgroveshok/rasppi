@@ -18,6 +18,16 @@ import hcsr04, time
 from gpiozero import LED
 import os
 
+senseButSelection = 0
+senseButStartStop = 0
+
+senseButSelection = 0
+senseButStartStop = 0
+senseCaddyIn = 0
+senseCaddyOut = 0
+senseBottleMark = 0
+senseButAdjustPreset = 0
+senseBottlePresent = 0
 
 class stage:
     Selection = 1
@@ -27,6 +37,9 @@ class stage:
     FillInsert = 5
     Filling = 6
     Stop = 7
+    Init = 8
+
+
 
 
 pz.init()
@@ -35,10 +48,11 @@ hcsr04.init()
 # machine pin out
 
 pinCaddyIn = 0
-pinCaddyOut = 1
+pinCaddyOut = 0
 pinBottleMark = 2
-pinButSelection = 0
+pinButSelection = 2
 pinButStartStop = 3
+pinButAdjustPreset = 1
 pinFillInsert = 1
 
 pinCaddyDrive = 0
@@ -56,6 +70,7 @@ pinPump = 0
 
 senseButSelection = 0
 senseButStartStop = 0
+senseButAdjustPreset = 0
 senseCaddyIn = 0
 senseCaddyOut = 0
 senseBottleMark = 0
@@ -78,6 +93,9 @@ displayLED = [ [ 0, False, False, False ], \
     [ 0, True, False, False ],
     [ 0, True, False, True ],
     [ 0, True, True, False ],
+    [ 0, True, True, True ],
+    [ 0, True, True, True ],
+    [ 0, True, True, True ],
     [ 0, True, True, True ] ]
 
 
@@ -104,8 +122,8 @@ def setLED():
 
         for p in range(0,8):
             if displayLED[p][0]:
-                print( "LED %d on" % (p))
-                if displayLED[p][1]:
+                #print( "LED %d on" % (p))
+                if displayLED[p][3]:
                     pin1.on()
                 else:
                     pin1.off()
@@ -113,7 +131,7 @@ def setLED():
                     pin2.on()
                 else:
                     pin2.off()
-                if displayLED[p][3]:
+                if displayLED[p][1]:
                     pin3.on()
                 else:
                     pin3.off()
@@ -148,12 +166,6 @@ def setLED():
 
 
 
-senseButSelection = 0
-senseButStartStop = 0
-
-def readSensors():
-    return ( not pz.readInput( pinButSelection ), not pz.readInput( pinButStartStop ), not pz.readInput( pinCaddyIn), int( hcsr04.getDistance()) )
-
 
 
     #TODO senseCaddyIn = 0
@@ -165,17 +177,26 @@ def readSensors():
 
 caddySpeedStop=88
 #caddySpeedStop=90
-caddySpeedIn=50
-#caddySpeedIn=78
-caddySpeedOut=98
+#too fast caddySpeedIn=98
+caddySpeedIn=93
+caddySpeedOut=50
 
 # TODO tune to pipe bottle insertion angles
-fillPipeIn=70
+fillPipeIn=100
 fillPipeOut=160
 
 # TODO change durations for required volumes once pump installed
 
 fillPrograms = [ 1,5, 10, 15, 20, 40, 1, 1 ]
+
+def cycleLEDS():
+    for f in range(0,8):
+        for s in range(0,8):
+            displayLED[s][0]=0
+
+        displayLED[f+1][0]=1
+        setLED()
+        time.sleep(0.25)
 
 
 def caddyIn():
@@ -204,7 +225,7 @@ def caddyNext():
 # init
 
 # selection options
-currentStage = stage.Selection
+currentStage = stage.Init
 
 
 # Pump selection running times
@@ -224,6 +245,10 @@ pressedStartStop = False
 
 pz.setInputConfig( pinButSelection, 0, True )
 pz.setInputConfig( pinButStartStop, 0, True )
+pz.setInputConfig( pinCaddyIn, 0, True )
+pz.setInputConfig( pinCaddyOut, 0, True )
+pz.setInputConfig( pinBottleMark, 0, True )
+pz.setInputConfig( pinButAdjustPreset, 0, True )
 
 #setOutputConfig( pinCaddyDrive, 
 
@@ -235,6 +260,9 @@ pz.setOutputConfig( pinLED3, 0 )
 pz.setOutputConfig( pinCaddyDrive, 2 )
 pz.setOutputConfig( pinFillInsert, 2 )
 
+pz.setOutput( pinCaddyDrive, caddySpeedStop )
+pz.setOutput( pinCaddyDrive, caddySpeedStop )
+pz.setOutputConfig( pinFillInsert, fillPipeOut )
 
 # TODO set pump pin
 # TODO set caddy motor pin
@@ -243,8 +271,8 @@ pz.setOutputConfig( pinFillInsert, 2 )
 
 
 
-caddyIn()
-caddyNext()
+#caddyIn()
+#caddyNext()
 
 
 #try:
@@ -261,34 +289,59 @@ stopBottles=False
 
 l=0
 
+prevStage=stage.Selection
+stageSetup=True
 
 
 
-
-
-try:
-    while not stopBottles:
+#try:
+while not stopBottles:
        
-
+        if currentStage != prevStage :
+            prevStage = currentStage
+            stageSetup = True
+        else:
+            stageSetup = False
 
 
         setLED()
-        ( senseButSelection, senseButStartStop, senseCaddyIn, senseBottlePresent ) = readSensors()
+#        readSensors()
+        #( senseButSelection, senseButStartStop, senseCaddyIn, senseBottlePresent ) = readSensors()
 
-        print( ":%d-%d-%d-%d-%d" % ( senseButSelection, senseButStartStop, pressedSelection,  currentStage, senseBottlePresent) )
-        print( "1")
+#def readSensors():
+        senseButSelection = not pz.readInput( pinButSelection)
+        senseButStartStop = not pz.readInput( pinButStartStop)
+        senseCaddyIn = not pz.readInput( pinCaddyIn)
+        senseCaddyOut = not pz.readInput( pinCaddyOut)
+        senseBottleMark = not pz.readInput( pinBottleMark)
+        senseButAdjustPreset = not pz.readInput( pinButAdjustPreset)
+
+
+
+        senseBottlePresent = int( hcsr04.getDistance()) 
+
+#    print(" select %d" % ( senseButSelection ))
+    #return 
+#        print( ": sel %d selbut %d ex %d start %d sel %d stage %d pres %d mrk %d in/out %d "        % ( fillSelection, senseButSelection, senseButAdjustPreset,  senseButStartStop,  pressedSelection,  currentStage,        senseBottlePresent, senseBottleMark, senseCaddyIn +  senseCaddyOut) )
+
+#        currentStage = stage.Selection
+#
+        #print( "1")
 
         if currentStage != stage.Selection :
-           print( "2")
+           #print( "2")
            # TODO emergency stop if start button is pressed when running
+
+
            if senseButStartStop :
-                print( "3")
+                #print( "3")
                 print(" emergency stop!")
                 currentStage = stage.Selection
                 pressedStartStop = True
                 # TODO stop pump
                 # TODO stop servo
-                pz.setOutput(pinCaddyDrive, 90)
+                pz.setOutput(pinCaddyDrive,caddySpeedStop )
+                pz.setOutput( pinFillInsert, fillPipeOut)
 
            # As process is running set the display to
            # be the current stage number
@@ -312,10 +365,10 @@ try:
 #           dispLED3 = fillSelection == 2
 #           dispLED4 = fillSelection == 3
 #           dispLED5 = fillSelection == 4
-            print( "4 %d" % (fillSelection))
+            #print( "4 %d" % (fillSelection))
             # select mode
             if senseButSelection :
-                print( "5")
+                #print( "5")
                 # selection button pressed
                 pressedSelection = True
                 print "Holding down selection button"
@@ -351,6 +404,7 @@ try:
 
             if senseButStartStop and not senseButSelection and not pressedStartStop:
 
+                cycleLEDS()
                 # TODO start the system
                 print( "Start fill process")
                 # currentStage = stage.LoadCaddy
@@ -370,50 +424,61 @@ try:
 
 
         elif currentStage == stage.LoadCaddy:
-            dispLED2 = True
-            setLED()
-            currentStage = stage.FindingBottleMark
-            caddyPos = 0
-            time.sleep(2)
+            if stageSetup:
+                dispLED2 = True
+                pz.setOutput( pinFillInsert, fillPipeOut)
+#                caddyPos = 0
+#            time.sleep(2)
             # TODO add sensor check and remove counter
-            pz.setOutput( pinCaddyDrive, caddySpeedOut )
-            print( "Put Caddy Out" )
-            time.sleep(5)
-            pz.setOutput( pinCaddyDrive, caddySpeedStop )
-            time.sleep(1)
-            pz.setOutput( pinCaddyDrive, caddySpeedStop )
+                pz.setOutput( pinCaddyDrive, caddySpeedOut )
+                print( "Roll caddy out")
+                time.sleep(0.25)
+            else:
+                if senseCaddyOut:
+                    print( "Caddy is out")
+                    pz.setOutput( pinCaddyDrive, caddySpeedStop )
+                    time.sleep(1)
+                    pz.setOutput( pinCaddyDrive, caddySpeedStop )
+                    pz.setOutput( pinCaddyDrive, caddySpeedIn )
+                    time.sleep(0.25)
+                    currentStage = stage.FindingBottleMark
+            setLED()
             #TODO
             
         elif currentStage == stage.FindingBottleMark:
 
-            dispLED3 = True
-            dispLED4 = False
-            dispLED5 = False
-            setLED()
-            currentStage = stage.BottlePresentScan
-            pz.setOutput( pinFillInsert, fillPipeOut)
-            time.sleep(2)
+            if stageSetup:
+                pz.setOutput( pinFillInsert, fillPipeOut)
+#            dispLED3 = True
+#            dispLED4 = False
+#            dispLED5 = False
 
 
             # TODO add sensor check and remove counter
-            move = 5
-            pz.setOutput( pinCaddyDrive, caddySpeedIn )
-            while move > 0 :
-                
+                pz.setOutput( pinCaddyDrive, caddySpeedIn )
                 print( "Finding bottle marker" )
-
-                move = move -1
-                time.sleep(2)
-            pz.setOutput( pinCaddyDrive, caddySpeedStop )
-            time.sleep(1)
-            pz.setOutput( pinCaddyDrive, caddySpeedStop )
-
-            if senseCaddyIn :
-                currentStage = stage.Selection
-                # TODO stop caddy
+                time.sleep(0.25)
             else:
-                #TODO move caddy
-                pass
+
+                if senseBottleMark:
+                    pz.setOutput( pinCaddyDrive, caddySpeedStop )
+                    time.sleep(1)
+                    currentStage = stage.BottlePresentScan
+                    pz.setOutput( pinCaddyDrive, caddySpeedStop )
+
+                if senseCaddyIn :
+                    print "At end of filling. Stop"
+                    currentStage = stage.Selection
+                    pz.setOutput( pinCaddyDrive, caddySpeedStop )
+                    time.sleep(1)
+                    pz.setOutput( pinCaddyDrive, caddySpeedStop )
+                    pz.setOutput( pinFillInsert, fillPipeOut)
+                    cycleLEDS()
+                    # TODO stop caddy
+                else:
+                    #TODO move caddy
+                    pass
+            setLED()
         elif currentStage == stage.BottlePresentScan:
             dispLED4 = True
             dispLED5 = False
@@ -444,13 +509,32 @@ try:
             setLED()
             currentStage = stage.FindingBottleMark
             time.sleep(fillPrograms[fillSelection])
+            pz.setOutput( pinFillInsert, fillPipeOut)
  #          caddyPos = caddyPos + 10
             #TODO 
             pass
+        elif currentStage == stage.Init:
+            if stageSetup:
+                dispLED2 = True
+                pz.setOutput( pinFillInsert, fillPipeOut)
+#            caddyPos = 0
+#            time.sleep(2)
+            # TODO add sensor check and remove counter
+                pz.setOutput( pinCaddyDrive, caddySpeedIn )
+                print( "Roll caddy in")
+                time.sleep(0.25)
+            else:
+                if senseCaddyIn:
+                    print( "Caddy is in")
+                    pz.setOutput( pinCaddyDrive, caddySpeedStop )
+                    time.sleep(1)
+                    pz.setOutput( pinCaddyDrive, caddySpeedStop )
+                    currentStage = stage.Selection
+            setLED()
             
 
-except KeyboardInterrupt:
-    stopBottles = True
+#except KeyboardInterrupt:
+#    stopBottles = True
 
 #finally:
 hcsr04.cleanup()
