@@ -430,6 +430,10 @@ while not stopBottles:
                 fillStage = fillStage + 1
                 print( "Do pump %d" % fillStage )
                 pressedSelection = False
+                pz.forward( fillSpeed)
+                time.sleep(fillPulse)
+                pz.stop()
+                
 
 
 #            print( "Blink state %d at %d " % ( displayLED[fillSelection][0], learnBlink ))
