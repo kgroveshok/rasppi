@@ -188,7 +188,8 @@ fillPipeOut=160
 
 fillPrograms = [ 1,5, 10, 15, 20, 40, 1, 1 ]
 fillSpeed = -100
-fillPulse = 0.25
+fillPulse = 0.05
+fillStage = 0
 
 def cycleLEDS():
     for f in range(0,8):
@@ -371,7 +372,10 @@ while not stopBottles:
                 pressedStartStop = False
 
         if currentStage == stage.Selection:
-            pz.setOutput( pinFillInsert, fillPipeOut)
+            if stageSetup :
+                pz.setOutput( pinFillInsert, fillPipeOut)
+                fillStage = 0
+
             for p in range(0,8):
                 if fillSelection == p:
                     displayLED[p][0]=1
@@ -396,6 +400,7 @@ while not stopBottles:
                 # selection button has been released
 
                 pressedSelection = False
+                fillStage = 0
                 
                 # Cycle selection
                 fillSelection = fillSelection + 1
@@ -404,9 +409,8 @@ while not stopBottles:
                 print( "Fill selection %d" % fillSelection )
 
             if senseButSelection and senseButStartStop :
-                print( "7")
-                #runPump = pumpFlushTime
-                print( "Run pump pulse %d" % fillPulse )
+                fillStage = fillStage + 1
+                print( "Run pump pulse %d counted %d " % ( fillPulse, fillStage ) )
                 pz.forward( fillSpeed)
                 time.sleep(fillPulse)
                 pz.stop()
@@ -520,12 +524,24 @@ while not stopBottles:
 
 
         elif currentStage == stage.Filling:
-            print( "Fill bottle" )
-            dispLED5 = True
-            setLED()
-            currentStage = stage.FindingBottleMark
-            time.sleep(fillPrograms[fillSelection])
-            pz.setOutput( pinFillInsert, fillPipeOut)
+            if stageSetup:
+                dispLED5 = True
+                setLED()
+                fillStage = fillPrograms[fillSelection]
+                print( "Fill bottle using program %d for %d pulses" % (fillSelection, fillStage) )
+            else:
+                if fillStage == 0 :
+                    print( "Filling completed")
+                    currentStage = stage.FindingBottleMark
+                    pz.setOutput( pinFillInsert, fillPipeOut)
+                    time.sleep(0.5)
+                else:
+                    print( "Filling pulse %d" % ( fillStage ))
+                    pz.forward(fillSpeed)
+                    time.sleep(fillPulse)
+                    pz.stop()
+                    fillStage = fillStage - 1
+
  #          caddyPos = caddyPos + 10
             #TODO 
             pass
