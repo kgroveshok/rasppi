@@ -294,6 +294,22 @@ stageSetup=True
 
 
 
+while True:
+    print "on"
+    pz.setMotor(1,100)
+    time.sleep(1)
+    print "off"
+    pz.setMotor(1,0)
+    time.sleep(10)
+
+
+
+
+
+
+
+
+
 #try:
 while not stopBottles:
        
