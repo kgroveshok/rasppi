@@ -38,6 +38,7 @@ class stage:
     Filling = 6
     Stop = 7
     Init = 8
+    Learn = 9
 
 
 
@@ -95,6 +96,10 @@ displayLED = [ [ 0, False, False, False ], \
     [ 0, True, True, True ],
     [ 0, True, True, True ],
     [ 0, True, True, True ],
+    [ 0, True, True, True ],
+    [ 0, True, True, True ],
+    [ 0, True, True, True ],
+    [ 0, True, True, True ],
     [ 0, True, True, True ] ]
 
 
@@ -135,7 +140,6 @@ def setLED():
                 else:
                     pin3.off()
 #                time.sleep(0.25)
-
 
 #for i in range( 0, 3) :
 #    GPIO.setup(outputs[i],GPIO.OUT)
@@ -191,6 +195,31 @@ fillSpeed = -100
 fillPulse = 0.05
 fillStage = 0
 
+
+def savePrograms():
+    f = open( "bottle.settings","w" )
+    for p in range(0,6):
+        f.write("%d " % ( fillPrograms[p] ))
+    f.close()
+
+def loadPrograms():
+    try:
+        f = open( "bottle.settings","r" )
+        print "Loading programs from bottle.settings"
+        p = f.read()
+        fill = p.split(" ")
+        f.close()
+        for p in range(0,6):
+            fillPrograms[p]=int(fill[p])
+    except:
+        print "No bottle.settings file found. Using code defaults"
+
+    print "Current Programs"
+    for p in range(0,6):
+        fillPrograms[p]=int(fillPrograms[p])
+        print("Program %d = %d" % ( p, fillPrograms[p]))
+    pass
+
 def cycleLEDS():
     for f in range(0,8):
         for s in range(0,8):
@@ -220,9 +249,6 @@ def caddyIn():
         time.sleep(1)
         pz.setOutput( pinCaddyDrive, caddySpeedStop )
 
-def caddyNext():
-    pass
-
 
 # init
 
@@ -241,6 +267,7 @@ caddyPos = 0
 fillSelection = 0
 pressedSelection = False
 pressedStartStop = False
+pressedAdjust = False
 
 
 # setup I/O
@@ -293,7 +320,7 @@ l=0
 
 prevStage=stage.Selection
 stageSetup=True
-
+learnBlink = 0
 
 
 #while True:
@@ -308,7 +335,8 @@ stageSetup=True
 
 
 
-
+# load presaved programs if present
+loadPrograms()
 
 
 
@@ -320,7 +348,6 @@ while not stopBottles:
             stageSetup = True
         else:
             stageSetup = False
-
 
         setLED()
 #        readSensors()
@@ -343,7 +370,7 @@ while not stopBottles:
 #
         #print( "1")
 
-        if currentStage != stage.Selection :
+        if currentStage != stage.Selection and currentStage != stage.Learn:
            # TODO emergency stop if start button is pressed when running
 
 
@@ -367,10 +394,70 @@ while not stopBottles:
         if not senseButStartStop and pressedStartStop :
                 pressedStartStop = False
 
+
+        if currentStage == stage.Learn:
+            if stageSetup : 
+                print( "Entering learn mode for %d" % ( fillSelection ))
+                displayLED[fillSelection][0]=0
+                learnBlink = 0
+                # set current pump count
+                fillStage = 0
+                pressedAdjust = False
+                pressSelection = False
+
+            if senseButAdjustPreset :
+                #print( "5")
+                # selection button pressed
+                pressedAdjust = True
+                print "Holding down adjust button"
+
+            if senseButSelection :
+                #print( "5")
+                # selection button pressed
+                pressedSelection = True
+                print "Holding down selection button"
+
+            if not senseButAdjustPreset and pressedAdjust :
+                print( "Exit adjustment for %d set at %d from %d" % ( fillSelection,  fillStage,fillPrograms[fillSelection]))
+                # set and save the adjustments
+                fillPrograms[fillSelection]=fillStage
+                savePrograms()
+                currentStage = stage.Selection
+                pressedAdjust=False
+                time.sleep(3)
+
+            if not senseButSelection and pressedSelection :
+                fillStage = fillStage + 1
+                print( "Do pump %d" % fillStage )
+                pressedSelection = False
+
+
+#            print( "Blink state %d at %d " % ( displayLED[fillSelection][0], learnBlink ))
+            # blink the current selection LED
+            if learnBlink == 0 :
+#                print ( "Blink led %d " %( displayLED[fillSelection][0]))
+                if displayLED[fillSelection][0]:
+                    displayLED[fillSelection][0] = 0
+                    displayLED[6][0] = 1
+                else:
+                    displayLED[6][0] = 0
+                    displayLED[fillSelection][0] = 1
+                learnBlink = 5
+                
+            setLED()
+                
+            learnBlink = learnBlink - 1
+
+
+
+            
+            #if displayLED[p][0]:
+
         if currentStage == stage.Selection:
             if stageSetup :
                 pz.setOutput( pinFillInsert, fillPipeOut)
                 fillStage = 0
+                pressedAdjust = False
 
             for p in range(0,8):
                 if fillSelection == p:
@@ -391,8 +478,16 @@ while not stopBottles:
                 pressedSelection = True
                 print "Holding down selection button"
 
+            if senseButAdjustPreset :
+                #print( "5")
+                # selection button pressed
+                pressedAdjust = True
+                print "Holding down adjust button"
+
+            if not senseButAdjustPreset and pressedAdjust :
+                currentStage = stage.Learn
+
             if not senseButSelection and pressedSelection :
-                print( "6")
                 # selection button has been released
 
                 pressedSelection = False
