@@ -333,10 +333,7 @@ while not stopBottles:
         senseCaddyOut = not pz.readInput( pinCaddyOut)
         senseBottleMark = not pz.readInput( pinBottleMark)
         senseButAdjustPreset = not pz.readInput( pinButAdjustPreset)
-
-
-
-        senseBottlePresent = int( hcsr04.getDistance()) 
+        senseBottlePresent = int( hcsr04.getDistance() )  
 
 #    print(" select %d" % ( senseButSelection ))
     #return 
@@ -347,19 +344,18 @@ while not stopBottles:
         #print( "1")
 
         if currentStage != stage.Selection :
-           #print( "2")
            # TODO emergency stop if start button is pressed when running
 
 
            if senseButStartStop :
-                #print( "3")
                 print(" emergency stop!")
                 currentStage = stage.Selection
                 pressedStartStop = True
-                # TODO stop pump
-                # TODO stop servo
+                # stop pump
                 pz.stop()
+                # stop servo
                 pz.setOutput(pinCaddyDrive,caddySpeedStop )
+                # take fill pipe out
                 pz.setOutput( pinFillInsert, fillPipeOut)
 
            # As process is running set the display to
@@ -425,15 +421,15 @@ while not stopBottles:
             if senseButStartStop and not senseButSelection and not pressedStartStop:
 
                 cycleLEDS()
-                # TODO start the system
+                # start the system
                 print( "Start fill process")
                 # currentStage = stage.LoadCaddy
-                displayLED[0][0]=1
-                dispLED1 = True
-                dispLED2 = False
-                dispLED3 = False
-                dispLED4 = False
-                dispLED5 = False
+#                displayLED[0][0]=1
+#                dispLED1 = True
+#                dispLED2 = False
+#                dispLED3 = False
+#                dispLED4 = False
+#                dispLED5 = False
                 currentStage = stage.LoadCaddy
                 time.sleep(2)
 
@@ -445,13 +441,14 @@ while not stopBottles:
 
         elif currentStage == stage.LoadCaddy:
             if stageSetup:
-                dispLED2 = True
+#                dispLED2 = True
                 pz.setOutput( pinFillInsert, fillPipeOut)
 #                caddyPos = 0
 #            time.sleep(2)
             # TODO add sensor check and remove counter
                 pz.setOutput( pinCaddyDrive, caddySpeedOut )
                 print( "Roll caddy out")
+                # TODO sensor debounce
                 time.sleep(0.25)
             else:
                 if senseCaddyOut:
@@ -460,10 +457,10 @@ while not stopBottles:
                     time.sleep(1)
                     pz.setOutput( pinCaddyDrive, caddySpeedStop )
                     pz.setOutput( pinCaddyDrive, caddySpeedIn )
+                    # TODO sensor debounce
                     time.sleep(0.25)
                     currentStage = stage.FindingBottleMark
             setLED()
-            #TODO
             
         elif currentStage == stage.FindingBottleMark:
 
@@ -474,9 +471,9 @@ while not stopBottles:
 #            dispLED5 = False
 
 
-            # TODO add sensor check and remove counter
                 pz.setOutput( pinCaddyDrive, caddySpeedIn )
                 print( "Finding bottle marker" )
+                # TODO sensor debounce
                 time.sleep(0.25)
             else:
 
@@ -503,6 +500,7 @@ while not stopBottles:
             dispLED4 = True
             dispLED5 = False
             setLED()
+            # TODO sensor debounce
             print( "Bottle present at this slot?" )
             time.sleep(2)
             if senseBottlePresent < threshBottlePresent :
@@ -547,13 +545,15 @@ while not stopBottles:
             pass
         elif currentStage == stage.Init:
             if stageSetup:
-                dispLED2 = True
+#                dispLED2 = True
+                pz.stop()
                 pz.setOutput( pinFillInsert, fillPipeOut)
 #            caddyPos = 0
 #            time.sleep(2)
             # TODO add sensor check and remove counter
                 pz.setOutput( pinCaddyDrive, caddySpeedIn )
                 print( "Roll caddy in")
+                # TODO sensor debounce
                 time.sleep(0.25)
             else:
                 if senseCaddyIn:
