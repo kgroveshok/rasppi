@@ -185,7 +185,7 @@ caddySpeedIn=93
 caddySpeedOut=50
 
 # TODO tune to pipe bottle insertion angles
-fillPipeIn=100
+fillPipeIn=90
 fillPipeOut=160
 
 # TODO change durations for required volumes once pump installed
@@ -339,6 +339,7 @@ learnBlink = 0
 loadPrograms()
 
 
+pipeStateIn = False
 
 #try:
 while not stopBottles:
@@ -461,6 +462,7 @@ while not stopBottles:
             if stageSetup :
                 pz.setOutput( pinFillInsert, fillPipeOut)
                 fillStage = 0
+                pipeStateIn = False
                 pressedAdjust = False
 
             for p in range(0,8):
@@ -488,7 +490,7 @@ while not stopBottles:
                 pressedAdjust = True
                 print "Holding down adjust button"
 
-            if not senseButAdjustPreset and pressedAdjust :
+            if not senseButAdjustPreset and pressedAdjust and not senseButStartStop :
                 currentStage = stage.Learn
 
             if not senseButSelection and pressedSelection :
@@ -510,6 +512,19 @@ while not stopBottles:
                 time.sleep(fillPulse)
                 pz.stop()
 
+            if senseButAdjustPreset and pressedAdjust and senseButStartStop :
+                pressedAdjust = False
+                print "Toggle fill pipe in and out"
+#                pressedAdjust = False
+#                senseButStartStop = False
+                # toggle fill pipe in and out
+                if pipeStateIn:
+                    pipeStateIn = False
+                    pz.setOutput( pinFillInsert, fillPipeOut)
+                else:
+                    pipeStateIn = True
+                    pz.setOutput( pinFillInsert, fillPipeIn)
+                time.sleep(0.5)
 
             #    dispLED1 = True
             #    dispLED2 = True
@@ -517,7 +532,7 @@ while not stopBottles:
             #    dispLED4 = True
             #    dispLED5 = True
 
-            if senseButStartStop and not senseButSelection and not pressedStartStop:
+            if senseButStartStop and not senseButSelection and not pressedStartStop and not senseButAdjustPreset:
 
                 cycleLEDS()
                 # start the system
