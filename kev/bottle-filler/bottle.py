@@ -64,8 +64,7 @@ pinLED3 = 5
 #pinLED5 = 5
 
 
-pinPump = 0
-
+pinPump = 1
 
 
 senseButSelection = 0
@@ -188,6 +187,8 @@ fillPipeOut=160
 # TODO change durations for required volumes once pump installed
 
 fillPrograms = [ 1,5, 10, 15, 20, 40, 1, 1 ]
+fillSpeed = -100
+fillPulse = 0.25
 
 def cycleLEDS():
     for f in range(0,8):
@@ -294,13 +295,13 @@ stageSetup=True
 
 
 
-while True:
-    print "on"
-    pz.setMotor(1,100)
-    time.sleep(1)
-    print "off"
-    pz.setMotor(1,0)
-    time.sleep(10)
+#while True:
+#    print "on 100"
+#    pz.reverse(100)
+#    time.sleep(1)
+#    print "off"
+#    pz.stop()
+#    time.sleep(5)
 
 
 
@@ -356,6 +357,7 @@ while not stopBottles:
                 pressedStartStop = True
                 # TODO stop pump
                 # TODO stop servo
+                pz.stop()
                 pz.setOutput(pinCaddyDrive,caddySpeedStop )
                 pz.setOutput( pinFillInsert, fillPipeOut)
 
@@ -403,13 +405,11 @@ while not stopBottles:
 
             if senseButSelection and senseButStartStop :
                 print( "7")
-                runPump = pumpFlushTime
-                pz.setMotor( pinPump, 50)
-                while runPump :
-                    print( "Run pump pulse %d" % runPump )
-                    # TODO run pump
-                    runPump = runPump - 1
-                pz.setMotor( pinPump, 0)
+                #runPump = pumpFlushTime
+                print( "Run pump pulse %d" % fillPulse )
+                pz.forward( fillSpeed)
+                time.sleep(fillPulse)
+                pz.stop()
 
 
             #    dispLED1 = True
